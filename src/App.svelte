@@ -7,6 +7,7 @@ let canvas;
 let video;
 let movie;
 let files;
+let vLayer;
 const cropStart = writable(0)
 const cropEnd = writable(Infinity)
 const recordingDuration = writable(Infinity)
@@ -21,12 +22,20 @@ const safeRange = derived([cropStart, cropEnd, recordingDuration], ([$s, $e, $d]
   return { start, end }
 })
 
+const isEncoding = writable(false)
+const encodingProgress = derived([isEncoding, safeRange, currentTime], ([$e, range, time]) => {
+  if (!$e) return 0
+  return (time - range.start) / (range.end - range.start)
+})
+const outputURL = writable(null)
+
 onMount(() => {
+   vLayer = new vd.layer.Video({
+    startTime: 0,
+    source: video
+  })
   movie = new vd.Movie({ canvas, repeat: true })
-    // .addLayer(new vd.layer.Visual(0, Infinity, { background: 'black' }))
-    .addLayer(new vd.layer.Video({ startTime: 0, source: video })
-      // .addEffect(new vd.effect.ChromaKey(vd.parseColor('black'), 100))
-    )
+    .addLayer(vLayer)
   // repeat: true flag does nothing, workaround for looping
   // the clip
   vd.event.subscribe(movie, 'movie.ended', ev => {
@@ -57,8 +66,8 @@ $: {
 async function resetPlayback (start) {
   console.log(`resetPlayback(${start})`)
   try {
-    await movie.setCurrentTime(start, false)
     movie.stop()
+    await movie.setCurrentTime(start, false)
     await movie.play()
   } catch (err) {
     console.error('resetPlayback() failed:', err)
@@ -105,6 +114,7 @@ recording.subscribe(url => {
     video.onloadedmetadata = () => {
       console.log('video.onloadedmetadata')
       $recordingDuration = video.duration
+      // debugger
       resizeMovie()
       resetPlayback(0)
     }
@@ -118,6 +128,20 @@ const screenDimensions = writable({
   height: window.innerWidth,
   ratio: window.devicePixelRatio
 })
+
+function exportRecording () {
+  movie.stop()
+  $isEncoding = true
+  movie.record({ frameRate: 60 })
+    .then(blob => {
+      console.log('Blob', blob)
+      $outputURL = URL.createObjectURL(blob)
+      // setTimeout(function () { URL.revokeObjectURL(a.href) }, 4E4) // 40s // https://github.com/eligrey/FileSaver.js/blob/master/src/FileSaver.js
+      movie.stop()
+      movie.play()
+      $isEncoding = false
+    })
+}
 
 function handleResize () {
   const dimensions = {
@@ -138,6 +162,7 @@ function globError (err) {
   <video style="display:none" bind:this={video}>
     <track kind="captions">
   </video>
+  <input bind:value={$cropStart} type="number"/>
   <pre>{$currentTime}</pre>
   <canvas	bind:this={canvas} />
   <br/>
@@ -145,6 +170,12 @@ function globError (err) {
     accept="video/*"
     type="file"/>
   <button on:click={startRecording}>Record</button>
+  {#if $isEncoding}
+    <h3>Encoding... {Math.floor($encodingProgress * 100)}%</h3>
+  {:else}
+    <button on:click={exportRecording}>Share</button>
+  {/if}
+  <h3><a href="{$outputURL}">Save As</h3>
 </main>
 <svelte:window on:resize|passive={handleResize} on:error={globError} />
 
