@@ -1,8 +1,8 @@
-# oxytox-web
+# oxytracker
 
 Because my patience with kotlin is shorter than I imagined,
 come back later when proper readme is available or just go
-play [https://github.com/telamon/oxytox](oxytox) using a camera, calendar and telegram.
+play (OXytOX)[https://github.com/telamon/oxytox] using a camera, calendar and telegram.
 
 No apps required.
 
