@@ -3,6 +3,9 @@
 import vd from 'vidar'
 import { onMount } from 'svelte'
 import { writable, derived, get } from 'svelte/store'
+import { saveAs } from 'file-saver';
+const MAX_HEIGHT = 480 // 854
+const MAX_WIDTH = MAX_HEIGHT * (480 / 854) // 480
 let canvas;
 let video;
 let movie;
@@ -18,7 +21,7 @@ const safeRange = derived([cropStart, cropEnd, recordingDuration], ([$s, $e, $d]
   // ensure range within duration without overlap.
   const toxDuration = 1
   let start = $s + toxDuration < $d ? Math.max($s, 0) : 0
-  let end = $e < $s + toxDuration ? $e : $d
+  let end = $e >= $s + toxDuration ? $e : $d
   return { start, end }
 })
 
@@ -30,9 +33,17 @@ const encodingProgress = derived([isEncoding, safeRange, currentTime], ([$e, ran
 const outputURL = writable(null)
 
 onMount(() => {
-   vLayer = new vd.layer.Video({
+  vLayer = new vd.layer.Video({
+    source: video,
     startTime: 0,
-    source: video
+    duration: 2,
+    destWidth: MAX_WIDTH,
+    destHeight: MAX_HEIGHT
+  })
+  safeRange.subscribe(r => {
+    console.log('Duration change', r)
+    vLayer.duration = r.end
+    vLayer.startTime = r.start
   })
   movie = new vd.Movie({ canvas, repeat: true })
     .addLayer(vLayer)
@@ -42,23 +53,23 @@ onMount(() => {
     // console.log('movie.ended', ev)
     $playbackEnded = true
   })
-
   vd.event.subscribe(movie, 'movie.timeupdate', ev =>
     $currentTime = ev.movie.currentTime )
 })
 
 // resetPlayback when currentTime exceeds safe end
+/*
 $: {
   if (currentTime && (safeRange.end < currentTime)) {
     resetPlayback(safeRange.start)
       .catch(err => console.error('Critical error, err handler sanity failed', err))
   }
-}
+}*/
 // resetPlayback when on `movie.ended` event.
 $: {
   if ($playbackEnded) {
     $playbackEnded = false // Reset counter
-    resetPlayback($safeRange.start)
+    resetPlayback(0)
       .catch(err => console.error('Critical error, err handler sanity failed', err))
   }
 }
@@ -83,12 +94,10 @@ function resizeMovie () {
     movie.height = aspect * width
   } else {
     // TODO: this dosen't seem to have an effect.
-    movie.width = 240 // width / aspect
-    movie.height = 420 // height
+    movie.width = MAX_WIDTH // width / aspect
+    movie.height = MAX_HEIGHT // height
   }
-  console.log('New dims: ', width, aspect * width)
-  movie.width = width
-  movie.height = aspect * width
+  console.log('New dims: ', movie.width, movie.height)
 }
 
 const startRecording = () => {
@@ -135,11 +144,12 @@ function exportRecording () {
   movie.record({ frameRate: 60 })
     .then(blob => {
       console.log('Blob', blob)
-      $outputURL = URL.createObjectURL(blob)
+      // $outputURL = URL.createObjectURL(blob)
       // setTimeout(function () { URL.revokeObjectURL(a.href) }, 4E4) // 40s // https://github.com/eligrey/FileSaver.js/blob/master/src/FileSaver.js
       movie.stop()
       movie.play()
       $isEncoding = false
+      saveAs(blob)
     })
 }
 
@@ -163,6 +173,7 @@ function globError (err) {
     <track kind="captions">
   </video>
   <input bind:value={$cropStart} type="number"/>
+  <input bind:value={$cropEnd} type="number"/>
   <pre>{$currentTime}</pre>
   <canvas	bind:this={canvas} />
   <br/>
@@ -175,7 +186,6 @@ function globError (err) {
   {:else}
     <button on:click={exportRecording}>Share</button>
   {/if}
-  <h3><a href="{$outputURL}">Save As</h3>
 </main>
 <svelte:window on:resize|passive={handleResize} on:error={globError} />
 
