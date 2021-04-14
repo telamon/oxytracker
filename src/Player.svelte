@@ -1,18 +1,18 @@
 <script>
 import vd from 'vidar'
-
 import { onMount } from 'svelte'
-export let url
-export let duration = 2
-export let start = 0
+import { writable } from 'svelte/store'
+export let url // Internal media url to binary blob
+export let duration = writable(2) // oxytox length 1-5s
+export let start = writable(0) // oxytox offset // TODO: maybe handle this internally?
 
 const MAX_HEIGHT = 480 // 854
 const MAX_WIDTH = MAX_HEIGHT * (480 / 854) // 480
+class MuteVideo extends vd.layers.VisualSourceMixin(vd.layers.Visual) {}
 
 let videoElement = null
 let canvasElement = null
-
-class MuteVideo extends vd.layers.VisualSourceMixin(vd.layers.Visual) {}
+const recordingDuration = writable(0)
 
 onMount(() => {
   const layer = new MuteVideo({
@@ -34,8 +34,8 @@ onMount(() => {
     $currentTime = ev.movie.currentTime)*/
 
   const subscriptions = [
-    duration.subscribe(sec => layer.duration = sec)
-    start.subscribe(sec => layer.start = sec)
+    duration.subscribe(sec => layer.duration = sec),
+    start.subscribe(sec => layer.start = sec),
     url.subscribe(loadURL)
   ]
   return () => {
@@ -61,6 +61,7 @@ function loadURL (url) {
 </script>
 
 <section>
+  <pre>Player.svelte</pre>
   <video style="display:none" bind:this={videoElement}>
     <track kind="captions"/>
   </video>

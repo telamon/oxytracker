@@ -1,7 +1,5 @@
 <script>
-// export let name
-import vd from 'vidar'
-import { onMount } from 'svelte'
+import Player from './Player.svelte'
 import { writable, derived, get } from 'svelte/store'
 import { saveAs } from 'file-saver';
 const MAX_HEIGHT = 480 // 854
@@ -10,13 +8,13 @@ let canvas;
 let video;
 let movie;
 let files;
-let vLayer;
 const cropStart = writable(0)
 const cropEnd = writable(Infinity)
 const recordingDuration = writable(Infinity)
 const recording = writable(null)
 const currentTime = writable(0)
 const playbackEnded = writable(false)
+
 const safeRange = derived([cropStart, cropEnd, recordingDuration], ([$s, $e, $d]) => {
   // ensure range within duration without overlap.
   const toxDuration = 1
@@ -31,7 +29,7 @@ const encodingProgress = derived([isEncoding, safeRange, currentTime], ([$e, ran
   return (time - range.start) / (range.end - range.start)
 })
 const outputURL = writable(null)
-
+/*
 onMount(() => {
   vLayer = new vd.layer.Video({
     source: video,
@@ -56,6 +54,7 @@ onMount(() => {
   vd.event.subscribe(movie, 'movie.timeupdate', ev =>
     $currentTime = ev.movie.currentTime )
 })
+*/
 
 // resetPlayback when currentTime exceeds safe end
 /*
@@ -169,9 +168,7 @@ function globError (err) {
 </script>
 
 <main>
-  <video style="display:none" bind:this={video}>
-    <track kind="captions">
-  </video>
+  <Player url={recording} />
   <input bind:value={$cropStart} type="number"/>
   <input bind:value={$cropEnd} type="number"/>
   <pre>{$currentTime}</pre>
