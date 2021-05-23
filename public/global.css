@@ -2,30 +2,48 @@
   --lcdfg: #253900;
   --lcdbg: olive;
   --lcdfont: monospace;
+  --lcdborder: 2px solid var(--lcdfg);
 }
 body {
   margin: 0;
+  /*
   background-attachment: fixed;
   background-repeat: no-repeat;
   background: linear-gradient(to top, cyan,  blue 20%, purple 100%);
-  display: block;
-  height: 100%;
+  */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* align-content: center;*/
+
   padding: 1em;
+  background-image: radial-gradient(circle,  #680068 61%, #330959 0%);
+  background-repeat: repeat;
+  background-position: 0 0, 50px 50px;
+  background-size: 3em 3em;
 }
 
-tomodochi150 {
+tomodachi150 {
   display: block;
-  border: 15px solid maroon;
+  border: 5px outset red;
+  padding: 15px;
   margin: 5px;
   background: maroon;
   border-radius: 15px;
+}
+
+@media (min-width: 640px) {
+  tomodachi150 {
+    max-width: 640px;
+  }
 }
 
 /* black plastic buttons */
 nav {
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
 }
 
@@ -37,9 +55,10 @@ nav a {
   text-shadow: 1px 1px #ff000080;
   text-decoration: none;
   text-transform: uppercase;
+  font-size: 0.5em;
+  width: 5em;
 }
-
-nav a:before {
+nav a:before { /* dummy button gfx hack with awesome highlight*/
   content: '\'';
   display: block;
   background-color: black;
@@ -51,6 +70,7 @@ nav a:before {
   transform: rotate(-15deg);
   border: 3px outset purple;
   color: magenta;
+  font-size: 17px;
 }
 
 brand {
@@ -59,7 +79,8 @@ brand {
   font-size: 1.5em;
   text-align: center;
   margin-bottom: 0.3em;
-  text-shadow: 1px 1px #ff000080;
+  text-shadow: 1px 2px #ff000080;
+  font-family: cursive;
 }
 
 brand stripes {
@@ -71,11 +92,19 @@ lcd input, lcd button {
   border: 2px solid var(--lcdfg);
   font-family: var(--lcdfont);
   color: var(--lcdfg);
+  margin: 1px 0px;
 }
 
-lcd button.primary {
+lcd button {
   background-color: var(--lcdfg);
   color: var(--lcdbg);
+  font-weight: normal;
+}
+
+lcd button.alt {
+  font-weight: bold;
+  color: var(--lcdfg);
+  background: none;
 }
 
 lcd {
@@ -88,4 +117,19 @@ lcd {
   border: 4px inset maroon;
   padding: 0.5em;
   border-radius: 4px;
+}
+lcd h2 {
+  margin: 0;
+  padding: 0;
+  padding-bottom: 2px;
+  font-size: 0.9em;
+  border-bottom: 2px solid var(--lcdfg);
+  margin-bottom: 0.5em;
+}
+
+lcd pill {
+  background-color: var(--lcdfg);
+  color: var(--lcdbg);
+  border-radius: 8px;
+  padding: 0px 4px;
 }

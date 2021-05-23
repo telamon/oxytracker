@@ -60,14 +60,32 @@ export const tokens = [
 export const addressBook = readable([ // move to stores.js
   {
     alias: 'Alice',
-    pk: 0
+    pk: 0,
+    alignment: [1, 3, 7]
   },
   {
     alias: 'Bobatron',
-    pk: 1
+    pk: 1,
+    alignment: [7, 1, 2]
   },
   {
     alias: 'Centrifudge',
-    pk: 2
+    pk: 2,
+    alignment: [1, 3, 1]
+  },
+  {
+    alias: 'Dunbarrel',
+    pk: 3,
+    alignment: [2, 6, 1]
+  },
+  {
+    alias: 'Echelobster',
+    pk: 4,
+    alignment: [3, 5, 2]
+  },
+  {
+    alias: 'Phishman',
+    pk: 5,
+    alignment: [1, 3, 6]
   }
 ])

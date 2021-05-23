@@ -1,0 +1,77 @@
+.flex{display:flex;}
+.row{flex-direction: row;}
+.row-reverse{flex-direction: row-reverse;}
+.column{flex-direction: column;}
+.column-reverse{flex-direction: column-reverse;}
+.wrap{flex-wrap: wrap;}
+.wrap-reverse{flex-wrap: wrap-reverse;}
+.nowrap{flex-wrap: nowrap;}
+.space-around{ justify-content: space-around; }
+.space-between{ justify-content: space-between; }
+.start{ justify-content: flex-start; }
+.end{ justify-content: flex-end; }
+.center{ justify-content: center; }
+.xstart{ align-items: flex-start; }
+.xend{ align-items: flex-end; }
+.xcenter{ align-items: center; }
+.xbaseline{ align-items: baseline; }
+.xstrech { align-items: strech; }
+.grow1{ flex-grow: 1; }
+.grow2{ flex-grow: 2; }
+.grow3{ flex-grow: 3; }
+.grow4{ flex-grow: 4; }
+.text-right{ text-align: right;}
+.text-left{ text-align: left;}
+.text-center{ text-align: center;}
+.text-start{ text-align: start;}
+.text-end{ text-align: end; }
+.pull-right{ float: right; }
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+.fillx { width: 100%; }
+.bold{ font-weight: bold }
+.img-responsive {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.nolb {
+  white-space: nowrap;
+}
+
+[style*="--aspect-ratio"] > :first-child {
+  width: 100%;
+}
+
+[style*="--aspect-ratio"] > img {
+  height: auto;
+}
+
+/* aspect-ratio hack */
+@supports (--custom:property) {
+  [style*="--aspect-ratio"] {
+    position: relative;
+  }
+  [style*="--aspect-ratio"]::before {
+    content: "";
+    display: block;
+    padding-bottom: calc(100% / (var(--aspect-ratio)));
+  }
+  [style*="--aspect-ratio"] > :first-child {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+  }
+}
+ul.minimalist {
+  padding-left: 0;
+  list-style: none;
+}

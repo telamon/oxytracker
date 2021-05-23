@@ -44,13 +44,12 @@ function createHashSource(basename) {
 }
 </script>
 
-<tomodochi150>
+<tomodachi150>
 <brand>TOMODACHI 150 <stripes>\\\</stripes></brand>
   <Router>
     <lcd>
-      <ReportCreator/>
         <Route path="/" primary="{false}">
-          <div>Peers</div>
+          <ReportCreator></ReportCreator>
         </Route>
         <Route path="/profile">Profile</Route>
         <Route path="/timeline">Timeline</Route>
@@ -64,6 +63,6 @@ function createHashSource(basename) {
       <Link to="/create-record">Add</Link>
     </nav>
   </Router>
-</tomodochi150>
+</tomodachi150>
 <style>
 </style>
