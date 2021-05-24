@@ -1,10 +1,13 @@
 import svelte from 'rollup-plugin-svelte'
+import polyfills from 'rollup-plugin-node-polyfills'
 import commonjs from '@rollup/plugin-commonjs'
+// import builtins from 'rollup-plugin-node-builtins'
+// import globals from 'rollup-plugin-node-globals'
 import resolve from '@rollup/plugin-node-resolve'
+// import browserifyPlugin from 'rollup-plugin-browserify-transform'
 import livereload from 'rollup-plugin-livereload'
 import { terser } from 'rollup-plugin-terser'
 import css from 'rollup-plugin-css-only'
-
 const production = !process.env.ROLLUP_WATCH
 
 function serve () {
@@ -58,9 +61,16 @@ export default {
     // https://github.com/rollup/plugins/tree/master/packages/commonjs
     resolve({
       browser: true,
-      dedupe: ['svelte']
+      dedupe: ['svelte', 'sodium-universal'],
+      preferBuiltins: false
     }),
     commonjs(),
+    polyfills({ sourceMap: true, include: ['buffer'] }),
+    /*
+    builtins(),
+    globals(),
+    */
+    // browserifyPlugin(kek)
 
     // In dev mode, call `npm run start` once
     // the bundle has been generated

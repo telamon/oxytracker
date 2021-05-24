@@ -1,4 +1,9 @@
-import { writable, readable } from 'svelte/store'
+import { writable, readable, get } from 'svelte/store'
+import Kernel from './kernel'
+import levelup from 'levelup'
+import leveljs from 'level-js'
+// function levelup(e) { return e }
+// function leveljs() {}
 
 export const tokens = [
   {
@@ -56,36 +61,53 @@ export const tokens = [
     value: null
   }
 ]
+export const nullToken = tokens[tokens.length - 1]
 
 export const addressBook = readable([ // move to stores.js
   {
     alias: 'Alice',
     pk: 0,
-    alignment: [1, 3, 7]
+    alignment: [1, 3, 7],
+    level: 7
   },
   {
     alias: 'Bobatron',
     pk: 1,
-    alignment: [7, 1, 2]
+    alignment: [7, 1, 2],
+    level: 8
   },
   {
     alias: 'Centrifudge',
     pk: 2,
-    alignment: [1, 3, 1]
+    alignment: [1, 3, 1],
+    level: 3
   },
   {
     alias: 'Dunbarrel',
     pk: 3,
-    alignment: [2, 6, 1]
+    alignment: [2, 6, 1],
+    level: 2
   },
   {
     alias: 'Echelobster',
     pk: 4,
-    alignment: [3, 5, 2]
+    alignment: [3, 5, 2],
+    level: 4
   },
   {
     alias: 'Phishman',
     pk: 5,
-    alignment: [1, 3, 6]
+    alignment: [1, 3, 6],
+    level: 5
   }
 ])
+const DB = levelup(leveljs('oxytox'))
+export const kernel = new Kernel(DB)
+/*
+export async function createReport (mood, rumors) {
+  console.log('createReport()', mood, rumors, repo)
+  const { sk } = get(identity)
+  feed.append('kek', sk)
+  feed.inspect()
+}
+*/

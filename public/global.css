@@ -31,13 +31,9 @@ tomodachi150 {
   margin: 5px;
   background: maroon;
   border-radius: 15px;
+  box-shadow: 4px 4px 18px #15000d;
 }
 
-@media (min-width: 640px) {
-  tomodachi150 {
-    max-width: 640px;
-  }
-}
 
 /* black plastic buttons */
 nav {
@@ -117,7 +113,11 @@ lcd {
   border: 4px inset maroon;
   padding: 0.5em;
   border-radius: 4px;
+  width: 320px;
+  transition: height 2s;
+  min-height: 400px;
 }
+
 lcd h2 {
   margin: 0;
   padding: 0;
@@ -133,3 +133,26 @@ lcd pill {
   border-radius: 8px;
   padding: 0px 4px;
 }
+
+slime {
+  display: inline-block;
+  font-size: 1.7em;
+  padding: 0.2em;
+  border-radius: 100%;
+  transform: rotate(90deg) scaleX(0.8);
+  font-weight: normal;
+  background-color: var(--lcdbg);
+  color: var(--lcdfg);
+  border: var(--lcdborder);
+}
+
+slime.selected {
+  background-color: var(--lcdfg);
+  color: var(--lcdbg);
+}
+@media (min-width: 640px) {
+  tomodachi150 {
+    max-width: 640px;
+  }
+}
+

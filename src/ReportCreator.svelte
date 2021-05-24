@@ -1,6 +1,6 @@
 <script>
 import { writable } from 'svelte/store'
-import { addressBook, tokens } from './stores'
+import { addressBook, tokens, kernel } from './stores'
 import AppreciatePeer from './AppreciatePeer.svelte'
 const mood = writable(2)
 const interactions = writable([])
@@ -20,6 +20,9 @@ const tokenAssigned = octet => {
   $pickedPeer = null
   console.log(JSON.stringify($rumors, null , 2))
 }
+const commitDay = () => {
+  kernel.appendReport($mood, $rumors)
+}
 </script>
 <section>
   {#if !$isStaging && !$pickedPeer}
@@ -29,34 +32,44 @@ const tokenAssigned = octet => {
         <peer on:click={() => $pickedPeer = peer}>
           <portrait>
             <alias>{peer.alias}</alias>
-            <level>Lv3</level>
-            <alignment>2/7/2</alignment>
+            <level class="text-right">Lv{peer.level}</level>
             {#if $rumors.find(r => r.peer === peer.pk )}
               <token>{tokens[$rumors.find(r => r.peer === peer.pk).token].icon}</token>
             {/if}
+            <alignment class="text-right">{peer.alignment.join('/')}</alignment>
           </portrait>
         </peer>
       {/each}
     </peers>
     <div>
-      <input type="search" bind:value={$search} placeholder="search" class="fillx"/>
+      <input type="search" bind:value="{$search}" placeholder="search" class="fillx"/>
     </div>
     <div><button on:click={() => $isStaging = true} class="fillx">End day</button></div>
   {:else if $isStaging && !$pickedPeer}
     <h2>Day Summary</h2>
     <staging-area>
       <div>{new Date()}</div>
-      What's up?
-      {$mood}
-      <div>
-        <button on:click={() => $mood = 0} class="primary">0</button>
-        <button on:click={() => $mood = 1} class="primary">1</button>
-        <button on:click={() => $mood = 2} class="primary">2</button>
-        <button on:click={() => $mood = 3} class="primary">3</button>
+      <h3 class="text-center">What's up?</h3>
+      <div class="flex row space-around">
+        <slime on:click={() => $mood = 0} class:selected="{$mood === 0}"><t>:<small>D</small></t></slime>
+        <slime on:click={() => $mood = 1} class:selected="{$mood === 1}"><t>:<small>&gt;</small></t></slime>
+        <slime on:click={() => $mood = 2} class:selected="{$mood === 2}"><t>:<small>/</small></t></slime>
+        <slime on:click={() => $mood = 3} class:selected="{$mood === 3}"><t>:<small>(</small></t></slime>
       </div>
+      <br/>
+      Summary:
+      <summary class="flex column">
+        {#each $rumors as rumor}
+          <rumor>
+          {$addressBook.find(p => p.pk === rumor.peer)?.alias}
+          +{tokens[rumor.token].icon} {tokens[rumor.token].name}
+          </rumor>
+        {/each}
+      </summary>
+      <br/>
       <ctrls>
         <button on:click={() => $isStaging = false} class="alt">cancel</button>
-        <button>commit</button>
+        <button on:click={commitDay}>commit</button>
       </ctrls>
     </staging-area>
   {:else}
@@ -68,18 +81,28 @@ const tokenAssigned = octet => {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    /*
+     overflow-y: scroll;
+     height: 10em;
+    */
   }
   peer { display: block; }
   peers portrait {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1.5em 2fr 1fr 3em ;
+    grid-template-rows: 1fr;
+    grid-template-areas: "token alias stats lvl";
+    /*
     flex-direction: row;
     justify-content: space-between;
+    */
     align-items: center;
     border: var(--lcdborder);
     padding: 4px;
     margin: 2px 0;
   }
   portrait alias {
+    grid-area: alias;
     display: block;
     font-size: 1.2em;
     text-overflow: ellipsis;
@@ -96,5 +119,11 @@ const tokenAssigned = octet => {
     width: 100%;
     margin: 1px;
   }
-
+  alignment {
+    font-size: smaller;
+    font-weight: normal;
+    grid-area: stats;
+  }
+  level { grid-area: lvl; }
+  summary { border: var(--lcdborder); }
 </style>

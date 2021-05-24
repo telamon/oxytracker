@@ -1,6 +1,6 @@
 <script>
 import { writable } from 'svelte/store'
-import { tokens } from './stores'
+import { tokens, nullToken } from './stores'
 export let peer
 export let ondone
 const selectedToken = writable(tokens[tokens.length - 1])
@@ -14,9 +14,30 @@ const fireAndReset = clear => {
 <appreciator>
   {#if $peer}
     <dialogue>
-      <h3>{$peer.alias}</h3>
+    <h2 class="flex row space-between">
+      <span>{$peer.alias}</span>
+      <span>
+        O:{$peer.alignment[0]}
+        H:{$peer.alignment[1]}
+        C:{$peer.alignment[2]}
+      </span>
+      <span>Lv{$peer.level}</span>
+    </h2>
+    <ul class="minimalist">
+      <li>KEY: 0c456a55...1515</li>
+      <li>HEARD: 24 May 2021</li>
+      <li>SEEN: 12 May 2021</li>
+      <li>
+      </li>
+    </ul>
       <div class="flex column xcenter">
-        <p>Pick a vibe</p>
+        {#if $selectedToken === nullToken}
+          <p>Pick a vibe</p>
+          <br/>
+        {:else}
+          <h3>{$selectedToken.name}</h3>
+          <div>{$selectedToken.desc}</div>
+        {/if}
         <tokens>
         {#each tokens as token}
           <t on:click="{() => $selectedToken = token}" class:selected="{$selectedToken === token}">
@@ -25,8 +46,7 @@ const fireAndReset = clear => {
         {/each}
         </tokens>
       </div>
-      <h4>{$selectedToken.name}</h4>
-      <div>{$selectedToken.desc}</div>
+      <br/>
       <div class="flex row">
         <button on:click="{() => fireAndReset(1)}" class="alt fillx">clear</button>
         <button on:click="{() => fireAndReset(0)}" class="fillx" style="margin-left: 2px;">set</button>
@@ -60,25 +80,9 @@ const fireAndReset = clear => {
     background-image: radial-gradient(circle, var(--lcdfg) 65%, transparent 0%);
     background-repeat: no-repeat;
   }
-  appreciator {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
   dialogue {
     display: block;
     border: var(--lcdborder);
-    /*
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: gray;
-    border: 1px solid black;
-    border-radius: 4px;
-    */
     padding: 1em;
   }
 </style>
