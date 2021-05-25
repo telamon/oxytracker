@@ -3,6 +3,7 @@ const Repo = require('./pico-repo')
 const KEY_SK = 'reg/sk'
 const TYPE_PROFILE = 0
 const TYPE_REPORT = 1
+const TYPE_PACT = 2
 
 class Kernel {
   constructor (db) {
@@ -16,6 +17,7 @@ class Kernel {
       alias: null,
       tagline: null
     })
+    this.personalFeed = store(null)
   }
 
   async load () {
@@ -24,12 +26,9 @@ class Kernel {
         if (!err.notFound) throw err
       })
     if (!this._sk) return false
-    // repo.
-    this.profile._set({
-      pk: this.pk,
-      alias: 'kek',
-      tagline: 'bobkl'
-    })
+    // Update reduced states/stores
+    this.profile._set(await this.readProfile(this.pk))
+    this.personalFeed._set(await this.feed())
     return true
   }
 
@@ -44,7 +43,7 @@ class Kernel {
   async register (profile) {
     const { sk } = Feed.signPair()
     const f = new Feed()
-    const str = Buffer.from(JSON.stringify(profile))
+    const str = Buffer.from(JSON.stringify({ ...profile, date: new Date().getTime() }))
     const data = Buffer.alloc(1 + str.length)
     str.copy(data, 1)
     str[0] = TYPE_PROFILE
@@ -65,7 +64,7 @@ class Kernel {
     const data = Buffer.from(JSON.stringify({
       date: new Date().getTime(),
       mood,
-      rumors: rumors.map(r => ({ ...r, pk: r.pk.hexSlice() }))
+      rumors: rumors.map(r => ({ ...r, pk: r.pk.toString() }))
     }))
     const buffer = Buffer.alloc(1 + data.length)
     data.copy(buffer, 1)
@@ -73,7 +72,28 @@ class Kernel {
     f.append(buffer, this._sk)
     const merged = await this.repo.merge(f, this._mergeObserver)
     if (!merged) throw new Error('Failed to create report')
+    this.personalFeed._set(f)
     return true
+  }
+
+  async readProfile (key) {
+    const profile = { alias: null, pk: null, tagline: null, date: null }
+    const block = await this.findProfileBlock(key)
+    profile.pk = block.key
+    const p = JSON.parse(block.body.slice(1))
+    Object.assign(profile, p)
+    return profile
+  }
+
+  async findProfileBlock (key) {
+    let pblock = null
+    await this.repo.loadHead(key, (block, abort) => {
+      if (block.body[0] === TYPE_PROFILE) {
+        pblock = block
+        abort()
+      }
+    })
+    return pblock
   }
 
   _checkReady () {
@@ -117,6 +137,7 @@ function store (value, setter) {
 
   return {
     _set,
+    _dispatch: () => dispatch(),
     subscribe: cb => {
       subs.push(cb)
       cb(value)

@@ -1,4 +1,4 @@
-/*
+/* TODO: move to independent module "pico-repo" as this file was cannibalized from PoH
  * So this is going to be a persistent block-store
  * as opposed to picofeed which is an in-memory datatype,
  *

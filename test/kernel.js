@@ -20,6 +20,7 @@ test('load', async t => {
     t.ok(app.ready)
     console.log('Generated new profile', app.pk.hexSlice(0, 8))
   } catch (err) { t.error(err) }
+  t.end()
 })
 
 test('Append report', async t => {
@@ -42,4 +43,34 @@ test('Append report', async t => {
     feed.inspect()
     t.equal(feed.length, 2)
   } catch (err) { t.error(err) }
+  t.end()
+})
+
+test('profile', async t => {
+  t.plan(4)
+  try {
+    const app = new Kernel(DB())
+    await app.register({ alias: 'k70k', tagline: 'RRRR' })
+    app.profile.subscribe(p => {
+      t.equal(p.alias, 'k70k', 'exports alias')
+      t.equal(p.tagline, 'RRRR', 'exports tagline')
+      t.ok(p.date, 'exports created at date')
+      t.ok(app.pk.equals(p.pk), 'exports public key')
+    })
+  } catch (err) { t.error(err) }
+  t.end()
+})
+
+test('addressBook', async t => {
+  t.plan(10)
+  const a = new Kernel(DB())
+  const b = new Kernel(DB())
+  await a.register({ alias: 'A', tagline: 'test' })
+  await b.register({ alias: 'B', tagline: 'test' })
+  t.notOk(await a.findProfileBlock(b.pk), 'B profile not found in A')
+  const f = new Feed()
+  f.merge(await b.findProfileBlock(b.pk))
+  a.update(f) // Transfer block to a
+  t.ok(await a.findProfileBlock(b.pk), 'B profile found in A')
+  t.end()
 })

@@ -10,11 +10,11 @@ const rumors = writable([])
 const isStaging = writable(false)
 
 const tokenAssigned = octet => {
-  const rumor = $rumors.find(r => r.peer === $pickedPeer.pk)
+  const rumor = $rumors.find(r => r.pk === $pickedPeer.pk)
   if (rumor) {
     rumor.token = octet
   } else if (octet !== null) {
-    $rumors.push({ peer: $pickedPeer.pk, token: octet })
+    $rumors.push({ pk: $pickedPeer.pk, token: octet })
   }
   $rumors = $rumors.filter(p => p.token !== null)
   $pickedPeer = null
@@ -22,6 +22,10 @@ const tokenAssigned = octet => {
 }
 const commitDay = () => {
   kernel.appendReport($mood, $rumors)
+    .then(() => {
+      $isStaging = false
+    })
+    .catch(err => console.error('Failed appendReport()', err))
 }
 </script>
 <section>
@@ -33,8 +37,8 @@ const commitDay = () => {
           <portrait>
             <alias>{peer.alias}</alias>
             <level class="text-right">Lv{peer.level}</level>
-            {#if $rumors.find(r => r.peer === peer.pk )}
-              <token>{tokens[$rumors.find(r => r.peer === peer.pk).token].icon}</token>
+            {#if $rumors.find(r => r.pk === peer.pk )}
+              <token>{tokens[$rumors.find(r => r.pk === peer.pk).token].icon}</token>
             {/if}
             <alignment class="text-right">{peer.alignment.join('/')}</alignment>
           </portrait>
@@ -61,7 +65,7 @@ const commitDay = () => {
       <summary class="flex column">
         {#each $rumors as rumor}
           <rumor>
-          {$addressBook.find(p => p.pk === rumor.peer)?.alias}
+          {$addressBook.find(p => p.pk === rumor.pk)?.alias}
           +{tokens[rumor.token].icon} {tokens[rumor.token].name}
           </rumor>
         {/each}

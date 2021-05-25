@@ -64,8 +64,8 @@ nav a:before { /* dummy button gfx hack with awesome highlight*/
   margin-bottom: 5px;
   border-radius: 15px;
   transform: rotate(-15deg);
-  border: 3px outset purple;
-  color: magenta;
+  border: 3px outset midnightblue;
+  color: blue;
   font-size: 17px;
 }
 

@@ -36,6 +36,7 @@
                                   supported by Chrome and Opera */
 }
 .fillx { width: 100%; }
+.filly { height: 100%; }
 .bold{ font-weight: bold }
 .img-responsive {
   width: 100%;
