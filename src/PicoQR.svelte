@@ -1,8 +1,7 @@
 <script>
 import { AwesomeQR as AQR } from 'awesome-qr'
 import { onMount } from 'svelte'
-export let baseUri
-export let feed
+export let data
 export let size = 318
 export let margin = 0
 export let colorDark = '#000' // '#253900'
@@ -10,10 +9,10 @@ export let colorLight = '#808000'
 let imgElem
 
 onMount(() => {
-  return feed.subscribe(f => {
+  return data.subscribe(f => {
     if (!f) return
     new AQR({
-      text: baseUri + f.slice(1).pickle(),
+      text: f,
       size,
       margin,
       colorLight,

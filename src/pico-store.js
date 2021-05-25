@@ -24,7 +24,8 @@ class PicoStore {
       version: 0,
       head: undefined,
       value: initialValue,
-      initialValue
+      initialValue,
+      observers: []
     })
   }
 
@@ -36,6 +37,7 @@ class PicoStore {
       store.head = head
       store.version = JSON.parse(await this.repo.readReg(`VER/${store.name}`))
       store.value = JSON.parse(await this.repo.readReg(`STATES/${store.name}`))
+      for (const listener of store.observers) listener(store.value)
     }
     this._loaded = true
   }
@@ -86,6 +88,7 @@ class PicoStore {
       // who needs a seatbelt anyway? let's save some memory.
       store.value = val // Object.freeze(val)
       store.head = block.sig
+      for (const listener of store.observers) listener(store.value)
       if (!~modified.indexOf(store.name)) modified.push(store.name)
     }
     return modified
@@ -106,6 +109,7 @@ class PicoStore {
       store.value = store.initialValue
       store.version = 0
       store.head = undefined
+      for (const listener of store.observers) listener(store.value)
     }
 
     for (const { key, value: ptr } of peers) {
@@ -126,6 +130,17 @@ class PicoStore {
       }
     }
     return modified
+  }
+
+  on (name, observer) {
+    const store = this._stores.find(s => s.name === name)
+    if (!store) throw new Error(`No such store: "${name}"`)
+    if (typeof observer !== 'function') throw new Error('observer must be a function')
+    store.observers.push(observer)
+    observer(store.value)
+    return () => { // unsub
+      store.observers.splice(store.observers.indexOf(observer), 1)
+    }
   }
 }
 module.exports = PicoStore

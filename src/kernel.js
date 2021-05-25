@@ -87,14 +87,13 @@ class Kernel {
   */
 
   async findProfileBlock (key) {
-    let pblock = null
-    await this.repo.loadHead(key, (block, abort) => {
+    const f = await this.repo.loadHead(key, (block, abort) => {
       if (block.body[0] === TYPE_PROFILE) {
-        pblock = block
-        abort()
+        abort(true)
       }
     })
-    return pblock
+    f.truncate(1)
+    return f
   }
 
   /**

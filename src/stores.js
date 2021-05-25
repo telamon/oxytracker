@@ -1,4 +1,4 @@
-import { writable, readable, get } from 'svelte/store'
+import { writable, readable, derived } from 'svelte/store'
 import Kernel from './kernel'
 import levelup from 'levelup'
 import leveljs from 'level-js'
@@ -63,7 +63,7 @@ export const tokens = [
 ]
 export const nullToken = tokens[tokens.length - 1]
 
-export const addressBook = readable([ // move to stores.js
+export const addressBookFake = readable([ // move to stores.js
   {
     alias: 'Alice',
     pk: 0,
@@ -101,13 +101,29 @@ export const addressBook = readable([ // move to stores.js
     level: 5
   }
 ])
+
 const DB = levelup(leveljs('oxytox'))
 export const kernel = new Kernel(DB)
-/*
-export async function createReport (mood, rumors) {
-  console.log('createReport()', mood, rumors, repo)
-  const { sk } = get(identity)
-  feed.append('kek', sk)
-  feed.inspect()
+export const profile = readable({}, set => {
+  kernel.store.on('peers', peers => {
+    if (kernel.pk) set(peers[kernel.pk.toString('hex')])
+  })
+})
+export const peers = readable({}, set => {
+  kernel.store.on('peers', set)
+})
+export const addressBook = derived(peers, ($peers, set) => {
+  const list = []
+  const selfPk = kernel.pk.toString('hex')
+  for (const key of Object.keys($peers)) {
+    if (selfPk === key) continue // ignore self
+    list.push($peers[key])
+  }
+  set(list)
+})
+export const lastError = writable(null)
+export function error (msg, err) {
+  if (!err && typeof msg !== 'string') return error('╮(︶︿︶)╭', msg)
+  console.error(msg, err)
+  lastError.set({ err, msg })
 }
-*/

@@ -31,23 +31,36 @@ const commitDay = () => {
 <section>
   {#if !$isStaging && !$pickedPeer}
     <h2>Peers <pill>{$addressBook.length}</pill></h2>
-    <peers >
-      {#each $addressBook as peer}
-        <peer on:click={() => $pickedPeer = peer}>
-          <portrait>
-            <alias>{peer.alias}</alias>
-            <level class="text-right">Lv{peer.level}</level>
-            {#if $rumors.find(r => r.pk === peer.pk )}
-              <token>{tokens[$rumors.find(r => r.pk === peer.pk).token].icon}</token>
-            {/if}
-            <alignment class="text-right">{peer.alignment.join('/')}</alignment>
-          </portrait>
-        </peer>
-      {/each}
-    </peers>
+    {#if $addressBook.length}
+      <peers >
+        {#each $addressBook as peer}
+          <peer on:click={() => $pickedPeer = peer}>
+            <portrait>
+              <alias>{peer.alias}</alias>
+              <level class="text-right">Lv{peer.level}</level>
+              {#if $rumors.find(r => r.pk === peer.pk )}
+                <token>{tokens[$rumors.find(r => r.pk === peer.pk).token].icon}</token>
+              {/if}
+              <alignment class="text-right">{peer.alignment.join('/')}</alignment>
+            </portrait>
+          </peer>
+        {/each}
+      </peers>
     <div>
       <input type="search" bind:value="{$search}" placeholder="search" class="fillx"/>
     </div>
+    {:else}
+      <excuse class="flex column center xcenter text-center">
+        <h3>┐(￣ヮ￣)┌</h3>
+        <p>
+          The situation is very sad,<br/>
+          your TOMODACHI150 is empty.
+          <br/>
+          <br/>
+          Press the 'ME' button and scan the vCard.
+        </p>
+      </excuse>
+    {/if}
     <div><button on:click={() => $isStaging = true} class="fillx">End day</button></div>
   {:else if $isStaging && !$pickedPeer}
     <h2>Day Summary</h2>
