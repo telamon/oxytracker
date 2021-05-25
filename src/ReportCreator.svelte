@@ -55,10 +55,10 @@ const commitDay = () => {
       <div>{new Date()}</div>
       <h3 class="text-center">What's up?</h3>
       <div class="flex row space-around">
-        <slime on:click={() => $mood = 0} class:selected="{$mood === 0}"><t>:<small>D</small></t></slime>
+        <slime on:click={() => $mood = 2} class:selected="{$mood === 2}"><t>:<small>D</small></t></slime>
         <slime on:click={() => $mood = 1} class:selected="{$mood === 1}"><t>:<small>&gt;</small></t></slime>
-        <slime on:click={() => $mood = 2} class:selected="{$mood === 2}"><t>:<small>/</small></t></slime>
-        <slime on:click={() => $mood = 3} class:selected="{$mood === 3}"><t>:<small>(</small></t></slime>
+        <slime on:click={() => $mood = -1} class:selected="{$mood === -1}"><t>:<small>/</small></t></slime>
+        <slime on:click={() => $mood = -2} class:selected="{$mood === -2}"><t>:<small>(</small></t></slime>
       </div>
       <br/>
       Summary:

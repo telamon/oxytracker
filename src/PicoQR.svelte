@@ -8,8 +8,6 @@ export let margin = 0
 export let colorDark = '#000' // '#253900'
 export let colorLight = '#808000'
 let imgElem
-console.log('In:', baseUri, feed)
-console.log('AQR', AQR)
 
 onMount(() => {
   return feed.subscribe(f => {

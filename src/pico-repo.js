@@ -8,6 +8,7 @@ const Feed = require('picofeed')
 const HEAD = 0
 const BLOCK = 1
 const TAIL = 2
+const REG = 3 // misc
 
 function mkKey (type, key) {
   if (!Buffer.isBuffer(key)) throw new Error('Expected key to be a Buffer')
@@ -249,6 +250,49 @@ class PicoRepo { //  PicoJar (a jar for crypto-pickles)
     return val
   }
   */
+
+  async writeReg (key, value) {
+    const bkey = mkKey(REG, Buffer.from(key))
+    await this._db.put(bkey, Buffer.from(value))
+    return true
+  }
+
+  async readReg (key) {
+    const bkey = mkKey(REG, Buffer.from(key))
+    const value = await this._db.get(bkey)
+      .catch(err => {
+        if (!err.notFound) throw err
+      })
+    return value
+  }
+
+  async listHeads () {
+    const query = {
+      gt: mkKey(HEAD, Buffer.alloc(32).fill(0)),
+      lt: mkKey(HEAD, Buffer.alloc(32).fill(0xff))
+    }
+    const iter = this._db.iterator(query)
+    const result = []
+    while (true) {
+      try {
+        const [key, value] = await new Promise((resolve, reject) => {
+          iter.next((err, key, value) => {
+            if (err) reject(err)
+            else resolve([key, value])
+          })
+        })
+        if (!key) break
+        result.push({ key, value })
+      } catch (err) {
+        console.warn('Iterator died with an error', err)
+        break
+      }
+    }
+    await new Promise((resolve, reject) => {
+      iter.end(err => err ? reject(err) : resolve())
+    })
+    return result
+  }
 }
 
 module.exports = PicoRepo
