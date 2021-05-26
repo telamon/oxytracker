@@ -2,7 +2,7 @@
 import QR from 'qrcode-generator'
 import { onMount } from 'svelte'
 export let data
-export let size = 4
+export let size = 2
 export let margin = 0
 export let level = 'L'
 export let colorDark = '#000' // '#253900'
@@ -19,19 +19,6 @@ onMount(() => {
     qr.make()
     const url = qr.createDataURL(size, margin)
     imgElem.src = url
-
-/*
-    new AQR({
-      text: f,
-      size,
-      margin,
-      colorLight,
-      colorDark
-    })
-      .draw()
-      .then(url => imgElem.src = url)
-      .catch(err => console.error('Failed to paint QR-code', err))
-      */
   })
 })
 </script>

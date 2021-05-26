@@ -1,8 +1,13 @@
 <script>
 import { writable } from 'svelte/store'
-import { addressBook, tokens, kernel } from './stores'
+import {
+  kernel,
+  addressBook,
+  tokens,
+  reduceAlignment
+} from './stores'
 import AppreciatePeer from './AppreciatePeer.svelte'
-const mood = writable(2)
+const mood = writable(-1)
 const interactions = writable([])
 const search = writable('')
 const pickedPeer = writable(null)
@@ -18,7 +23,6 @@ const tokenAssigned = octet => {
   }
   $rumors = $rumors.filter(p => p.token !== null)
   $pickedPeer = null
-  console.log(JSON.stringify($rumors, null , 2))
 }
 const commitDay = () => {
   kernel.appendReport($mood, $rumors)
@@ -32,7 +36,7 @@ const commitDay = () => {
   {#if !$isStaging && !$pickedPeer}
     <h2>Peers <pill>{$addressBook.length}</pill></h2>
     {#if $addressBook.length}
-      <peers >
+      <peers>
         {#each $addressBook as peer}
           <peer on:click={() => $pickedPeer = peer}>
             <portrait>
@@ -41,7 +45,7 @@ const commitDay = () => {
               {#if $rumors.find(r => r.pk === peer.pk )}
                 <token>{tokens[$rumors.find(r => r.pk === peer.pk).token].icon}</token>
               {/if}
-              <alignment class="text-right">{peer.alignment.join('/')}</alignment>
+              <alignment class="text-right">{reduceAlignment(peer).join('/')}</alignment>
             </portrait>
           </peer>
         {/each}
@@ -49,6 +53,7 @@ const commitDay = () => {
     <div>
       <input type="search" bind:value="{$search}" placeholder="search" class="fillx"/>
     </div>
+    <div><button on:click={() => $isStaging = true} class="fillx">End day</button></div>
     {:else}
       <excuse class="flex column center xcenter text-center">
         <h3>┐(￣ヮ￣)┌</h3>
@@ -57,11 +62,10 @@ const commitDay = () => {
           your TOMODACHI150 is empty.
           <br/>
           <br/>
-          Press the 'ME' button and scan the vCard.
+          Scan a friends QR-code or ask them to send you a magic link
         </p>
       </excuse>
     {/if}
-    <div><button on:click={() => $isStaging = true} class="fillx">End day</button></div>
   {:else if $isStaging && !$pickedPeer}
     <h2>Day Summary</h2>
     <staging-area>

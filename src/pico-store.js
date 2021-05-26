@@ -36,7 +36,7 @@ class PicoStore {
       if (!head) continue // Empty
       store.head = head
       store.version = JSON.parse(await this.repo.readReg(`VER/${store.name}`))
-      store.value = JSON.parse(await this.repo.readReg(`STATES/${store.name}`))
+      store.value = decodeValue(await this.repo.readReg(`STATES/${store.name}`))
       for (const listener of store.observers) listener(store.value)
     }
     this._loaded = true
@@ -44,7 +44,7 @@ class PicoStore {
 
   async dispatch (patch) {
     const modified = []
-
+    patch = Feed.from(patch)
     // Check if head can be fast-forwarded
     const local = (await this.repo.loadHead(patch.last.key)) || new Feed()
     let n = 0
@@ -82,7 +82,7 @@ class PicoStore {
       const val = store.reducer({ block, state: store.value })
       if (typeof val === 'undefined') continue
       await this.repo.merge(block, this._strategy)
-      await this.repo.writeReg(`STATES/${store.name}`, JSON.stringify(val))
+      await this.repo.writeReg(`STATES/${store.name}`, encodeValue(val))
       await this.repo.writeReg(`HEADS/${store.name}`, block.sig)
       await this.repo.writeReg(`VER/${store.name}`, JSON.stringify(store.version++))
       // who needs a seatbelt anyway? let's save some memory.
@@ -143,4 +143,13 @@ class PicoStore {
     }
   }
 }
+
+function encodeValue (val) {
+  return JSON.stringify(val)
+}
+
+function decodeValue (val) {
+  return JSON.parse(val)
+}
+
 module.exports = PicoStore

@@ -10,7 +10,7 @@ message Profile {
 message Report {
   uint32 seq = 1;
   uint32 date = 2;
-  uint32 mood = 3;
+  sint32 mood = 3;
   repeated Rumor rumors = 4;
 }
 message Rumor {

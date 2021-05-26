@@ -1,6 +1,6 @@
 <script>
-import { writable } from 'svelte/store'
-import { tokens, nullToken } from './stores'
+import { writable, derived } from 'svelte/store'
+import { tokens, nullToken, reduceAlignment } from './stores'
 export let peer
 export let ondone
 const selectedToken = writable(tokens[tokens.length - 1])
@@ -10,6 +10,7 @@ const fireAndReset = clear => {
   $selectedToken = tokens[tokens.length - 1]
   ondone(clear ? $selectedToken.value : token.value)
 }
+const alignment = derived(peer, $p => reduceAlignment($p))
 </script>
 <appreciator>
   {#if $peer}
@@ -17,9 +18,9 @@ const fireAndReset = clear => {
     <h2 class="flex row space-between">
       <span>{$peer.alias}</span>
       <span>
-        O:{$peer.alignment[0]}
-        H:{$peer.alignment[1]}
-        C:{$peer.alignment[2]}
+        O:{$alignment[0]}
+        H:{$alignment[1]}
+        C:{$alignment[2]}
       </span>
       <span>Lv{$peer.level}</span>
     </h2>

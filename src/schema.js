@@ -148,7 +148,7 @@ function defineReport () {
       length += 1 + len
     }
     if (defined(obj.mood)) {
-      var len = encodings.varint.encodingLength(obj.mood)
+      var len = encodings.sint64.encodingLength(obj.mood)
       length += 1 + len
     }
     if (defined(obj.rumors)) {
@@ -178,8 +178,8 @@ function defineReport () {
     }
     if (defined(obj.mood)) {
       buf[offset++] = 24
-      encodings.varint.encode(obj.mood, buf, offset)
-      offset += encodings.varint.encode.bytes
+      encodings.sint64.encode(obj.mood, buf, offset)
+      offset += encodings.sint64.encode.bytes
     }
     if (defined(obj.rumors)) {
       for (var i = 0; i < obj.rumors.length; i++) {
@@ -224,8 +224,8 @@ function defineReport () {
         offset += encodings.varint.decode.bytes
         break
         case 3:
-        obj.mood = encodings.varint.decode(buf, offset)
-        offset += encodings.varint.decode.bytes
+        obj.mood = encodings.sint64.decode(buf, offset)
+        offset += encodings.sint64.decode.bytes
         break
         case 4:
         var len = varint.decode(buf, offset)

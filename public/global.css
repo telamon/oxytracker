@@ -83,7 +83,7 @@ brand stripes {
   display: block;
 }
 
-lcd input, lcd button, lcd textarea {
+lcd input, lcd button, lcd textarea, lcd progress {
   background: none;
   border: 2px solid var(--lcdfg);
   font-family: var(--lcdfont);
@@ -102,7 +102,12 @@ lcd button.alt {
   color: var(--lcdfg);
   background: none;
 }
-
+lcd progress[value] {
+  background-color: var(--lcdbg);
+}
+lcd progress[value]::-webkit-progress-bar, lcd progress[value]::-moz-progress-bar {
+  background-color: var(--lcdfg);
+}
 lcd {
   display: block;
   background: var(--lcdbg);

@@ -11,8 +11,30 @@ const loadKernel = () => {
   kernel.load()
     .then(r => loading.set(r ? 3 : 1))
     .catch(err => error('Loading kernel failed', err))
+    .then(async () => { // Attempt to merge URL-blocks
+      if (!window.location.hash.startsWith('#m,PIC0')) return
+      const pickle = window.location.hash.slice(3)
+      const mut = await kernel.dispatch(pickle)
+      console.log('Registers mutated:', ...mut)
+      window.location.hash = '#/'
+    })
+    .catch(err => error('Add peer failed', err))
 }
 loadKernel()
+// TODO: dirty drop-in due to removal of crappy svelte-navigator dep.
+// I wish more people thought serverless
+const mode = writable(0)
+
+const handleResize = () => {
+}
+const globError = err => {
+  console.error('globError', err)
+}
+const globReject = ev => {
+  ev.preventDefault()
+  ev.promise.catch(err => error('BORK! Uncaught rejection', err))
+}
+
 const register = () => {
   kernel.register({
     alias: $tmpAlias,
@@ -26,22 +48,14 @@ const inspectFeed = () => {
     .then(f => f.inspect())
     .catch(err => error('Failed loading feed', err))
 }
-// TODO: dirty drop-in due to removal of crappy svelte-navigator dep.
-// I wish more people thought serverless
-const mode = writable(0)
-const handleResize = () => {
+const reloadKernel = () => {
+  kernel.store.reload()
+    .catch(err => error('Failed reloading kernel', err))
 }
-const globError = err => {
-  console.error('globError', err)
+const clearDatabase = () => {
+  kernel.store.destroy()
+    .catch(err => error('Failed destorying database', err))
 }
-const globReject = ev => {
-  ev.preventDefault()
-  ev.promise.catch(err => error('BORK! Uncaught rejection', err))
-}
-
-lastError.subscribe(err => {
-  console.info('manual sub', err)
-})
 </script>
 
 <tomodachi150>
@@ -54,9 +68,29 @@ lastError.subscribe(err => {
       <div>{$lastError.err.message}</div>
       <div class="error-stack">{$lastError.err.stack}</div>
       <button on:click="{() => $lastError = null}">dismiss</button>
-    {:else if $loading === 0}
-      <h3>Loading Kernel...</h3>
-      <progress value="70" max="100">70 %</progress>
+    {:else if $loading === 0}-->
+      <h2>Bootloader</h2>
+      <p>
+        <small>
+          Zeroing out RAM...done!<br/>
+          Loading kernel...<br/>
+          &gt; Cryptonix 15.0.1
+          &gt; MOTD: nothing is as it seems
+          $ cd..<br/>
+          hs: cd.. command not found
+          $ /sbin/dc<br/>
+          Internet disconnected sucessfully<br/>
+          $ /sbin/hypup<br/>
+          Bootstrapping hyperspace connection...<br/>
+          Failed! Hypermodem not implemented<br/>
+          $ /sbin/restore<br/>
+          Initializing blockstore.......done!<br/>
+          Deserializing states...fail!<br/>
+          Replaying time...<br/>
+        </small>
+      </p>
+
+      <progress value="70" max="100" class="block fillx">70 %</progress>
     {:else if $loading === 1}
       <div class="flex column space-between">
         <small class="text-right">v1.0.0</small>
@@ -135,6 +169,8 @@ lastError.subscribe(err => {
     <a on:click="{() => $mode = 3}" href="#/repl">Rx Tx</a>
   </nav>
   <mysteryButton on:click="{inspectFeed}">o</mysteryButton>
+  <mysteryButton on:click="{reloadKernel}">o</mysteryButton>
+  <mysteryButton on:click="{clearDatabase}">o</mysteryButton>
 </tomodachi150>
 <svelte:window
                  on:resize|passive={handleResize}

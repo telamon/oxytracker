@@ -66,8 +66,9 @@ class Kernel {
     const data = {
       date: new Date().getTime(),
       mood,
-      rumors: rumors.map(r => ({ ...r, pk: r.pk.toString('hex') }))
+      rumors: rumors.map(r => ({ ...r, pk: toBuffer(r.pk) }))
     }
+    console.info('Appending report', data)
     const buffer = Buffer.alloc(1 + Report.encodingLength(data))
     buffer[0] = TYPE_REPORT
     Report.encode(data, buffer, 1)
@@ -128,7 +129,8 @@ function profileStore () {
     lastReport: null,
     mood: 0,
     reputation: [],
-    perspective: []
+    perspective: [],
+    level: 0
   })
 
   return {
@@ -167,8 +169,8 @@ function profileStore () {
           state[key].mood += r.mood
           for (const rumor of r.rumors) {
             state[key].perspective.push(rumor.token)
-            const rk = rumor.pk
-            state[rk] = state[rk] || mkProfile(Buffer.from(rk, 'hex'))
+            const rk = rumor.pk.toString('hex')
+            state[rk] = state[rk] || mkProfile(rumor.pk)
             state[rk].reputation.push(rumor.token)
           }
           return state
@@ -187,6 +189,13 @@ function tokenBalances () {
     reducer: ({ block, state }) => {
     }
   }
+}
+
+function toBuffer (o) {
+  if (!o) return o
+  if (Buffer.isBuffer(o)) return o
+  if (typeof o === 'object' && o.type === 'Buffer') return Buffer.from(o.data)
+  else return o
 }
 
 module.exports = Kernel

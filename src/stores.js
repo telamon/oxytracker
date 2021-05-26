@@ -10,55 +10,64 @@ export const tokens = [
     name: 'Healer',
     desc: 'Makes you feel normal for a while',
     icon: '🌿', // '🩹',
-    value: 0
+    value: 1,
+    karma: 1
   },
   {
     name: 'Tank',
     desc: 'Shoulders your pain',
     icon: '🛡️',
-    value: 1
+    value: 2,
+    karma: 1.5
   },
   {
     name: 'Thief',
     desc: 'Pleasently steals your secrets',
     icon: '🗡️',
-    value: 2
+    value: 4,
+    karma: 0.5
   },
   {
     name: 'Warrior',
     desc: 'Fights by your side',
     icon: '⚔️',
-    value: 3
+    value: 3,
+    karma: 1.25
   },
   {
     name: 'Berserker',
     desc: 'Challenges your sanity',
     icon: '🪓',
-    value: 4
+    value: 5,
+    karma: 0.75
   },
   {
     name: 'Paladin',
     desc: 'All over the place',
     icon: '🔨',
-    value: 5
+    value: 7,
+    karma: 1
   },
   {
     name: 'Saint',
     desc: 'Gives the gift you need',
     icon: '🙏',
-    value: 6
+    value: 6,
+    karma: 2
   },
   {
     name: 'NPC', // Zombie / Succubus / Vampire / NPC
     desc: 'Non playable character',
     icon: '🧟',
-    value: 7
+    value: 0,
+    karma: 0
   },
   {
     name: 'X',
     desc: 'Not interacted with',
     icon: '❌',
-    value: null
+    value: null,
+    karma: 0
   }
 ]
 export const nullToken = tokens[tokens.length - 1]
@@ -121,9 +130,23 @@ export const addressBook = derived(peers, ($peers, set) => {
   }
   set(list)
 })
+
+// global error handler
 export const lastError = writable(null)
 export function error (msg, err) {
   if (!err && typeof msg !== 'string') return error('╮(︶︿︶)╭', msg)
   lastError.set({ err, msg })
   console.error(msg, err)
+}
+
+// helpers.js
+export function reduceAlignment (peer) {
+  const out = [0, 0, 0]
+  if (!peer) return out
+  for (const rep of peer.reputation) {
+    out[0] += rep & 1
+    out[1] += (rep >> 1) & 1
+    out[2] += (rep >> 2) & 1
+  }
+  return out
 }
