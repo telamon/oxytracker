@@ -3,7 +3,6 @@ import ReportCreator from './ReportCreator.svelte'
 import Profile from './Profile.svelte'
 import { kernel, error, lastError } from './stores'
 import { writable } from 'svelte/store'
-import { onMount } from 'svelte'
 const loading = writable(0)
 const tmpAlias = writable('')
 const tmpTagline = writable('')
@@ -11,10 +10,7 @@ const tmpTagline = writable('')
 const loadKernel = () => {
   kernel.load()
     .then(r => loading.set(r ? 3 : 1))
-    .catch(err => {
-      console.error(err)
-      loading.set(-1)
-    })
+    .catch(err => error('Loading kernel failed', err))
 }
 loadKernel()
 const register = () => {
@@ -33,45 +29,64 @@ const inspectFeed = () => {
 // TODO: dirty drop-in due to removal of crappy svelte-navigator dep.
 // I wish more people thought serverless
 const mode = writable(0)
-onMount(() => {
-  // window.onunhandledrejection = error
+const handleResize = () => {
+}
+const globError = err => {
+  console.error('globError', err)
+}
+const globReject = ev => {
+  ev.preventDefault()
+  ev.promise.catch(err => error('BORK! Uncaught rejection', err))
+}
+
+lastError.subscribe(err => {
+  console.info('manual sub', err)
 })
 </script>
 
 <tomodachi150>
+
 <brand>¤ TOMODACHI 150 ¤<stripes>\\\</stripes></brand>
   <lcd>
     {#if $lastError}
       <h2>500 エロール/ERROR</h2>
       <h3>{$lastError.msg}</h3>
       <div>{$lastError.err.message}</div>
-      <div>{$lastError.err.stack}</div>
+      <div class="error-stack">{$lastError.err.stack}</div>
+      <button on:click="{() => $lastError = null}">dismiss</button>
     {:else if $loading === 0}
+      <h3>Loading Kernel...</h3>
       <progress value="70" max="100">70 %</progress>
     {:else if $loading === 1}
-      <div class="flex column space-between xcenter">
-        <small>v1.0.0</small>
+      <div class="flex column space-between">
+        <small class="text-right">v1.0.0</small>
         <h1 class="text-center">
-          OXytOX<br/>
-          ٩(◕‿◕｡)۶ („• ֊ •„)<br/>
-          ペール アップ
+          <div class="flex row center xend"><small>HYPER</small>&nbsp;OX<small>yt</small>OX&nbsp;<small>TURBO</small></div>
+          <div class="vs">
+            <div class="flex row start">(„• ֊ •„)</div>
+            <small>VS</small>
+            <div class="flex row end">٩(◕‿◕｡)۶</div>
+          </div>
+          <div class="flex row center">ペール アップ</div>
         </h1>
-        <small>(Peer up!)</small>
-        <h1><button on:click="{() => $loading = 2}">Start</button></h1>
-        <small>2021 © Decent Labs - All wrongs reversed</small>
+        <small class="text-center">(Peer up!)</small>
+        <h1 class="text-center"><button on:click="{() => $loading = 2}">Start</button></h1>
+        <footer class="text-center"><small>2021 © Decent Labs - All wrongs reversed</small></footer>
       </div>
     {:else if $loading === 2}
-      <registration class="flex column fillx">
+      <registration class="flex column fillx filly space-between">
         <h2>Register profile <small>(100% offline)</small></h2>
-        <p>
+        <div>
           Name<br/>
           <input type="text" bind:value="{$tmpAlias}"/>
-        </p>
-        <p>
-          Pickup line<br/>
-          <input type="text" bind:value="{$tmpTagline}"/>
-        </p>
-        <button class="fillx" on:click="{register}">done!</button>
+        </div>
+        <p>&nbsp;</p>
+        <div>
+          Pickupline
+        </div>
+        <textarea bind:value="{$tmpTagline}" class="block"></textarea>
+        <p>&nbsp;</p>
+        <button class="fillx" on:click="{register}">submit</button>
       </registration>
     {:else if $loading === 3}
       {#if $mode === 0}
@@ -83,14 +98,15 @@ onMount(() => {
       {:else}
         <h2>404 エロール/ERROR</h2>
           <p class="text-center">
+            ヾ( ￣O￣)ツ
+            <br/>
+            <br/>
             You pressed the wrong button.<br/>
             Try again and be more gentle this time.<br/>
-            <br/>
-            ヾ( ￣O￣)ツ
           </p>
       {/if}
     {:else}
-      <h2>TOMODACHI150 WA SHINDERU (D:)</h2>
+      <h2>TOMODACHI150 WA MO SHINDERU (D:)</h2>
       <!-- <p>
         We regret to inform that
         something went horribly wrong
@@ -120,5 +136,19 @@ onMount(() => {
   </nav>
   <mysteryButton on:click="{inspectFeed}">o</mysteryButton>
 </tomodachi150>
+<svelte:window
+                 on:resize|passive={handleResize}
+                 on:error={globError}
+                 on:unhandledrejection={globReject}
+                 />
 <style>
+  .vs {
+    border: var(--lcdborder);
+    padding: 1em 0em;
+  }
+  .vs div { line-height: 0.5em; }
+  .error-stack {
+    font-weight: normal;
+    font-size: smaller;
+  }
 </style>

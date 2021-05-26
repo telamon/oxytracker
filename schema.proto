@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+message Profile {
+  uint32 seq = 1;
+  uint32 date = 2; // UTC timestamp
+  string alias = 3;
+  string tagline = 4;
+}
+
+message Report {
+  uint32 seq = 1;
+  uint32 date = 2;
+  uint32 mood = 3;
+  repeated Rumor rumors = 4;
+}
+message Rumor {
+  bytes pk = 1;
+  uint32 token = 2;
+}
+/*
+// message: GAME_OVER = 7
+message GameOver {
+  uint32 code = 1;
+  bytes entropy = 2; // max 32bytes
+  Hero player1 = 3;
+  Hero player2 = 4;
+  uint32 rounds = 5; // As a by-product this will give us the amount of blocks between end and challenge
+  repeated string rules = 6;
+  bytes challenge_pointer = 7; // = 64 bytes ref to start
+}
+*/

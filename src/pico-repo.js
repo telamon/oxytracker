@@ -282,7 +282,7 @@ class PicoRepo { //  PicoJar (a jar for crypto-pickles)
           })
         })
         if (!key) break
-        result.push({ key, value })
+        result.push({ key: key.slice(1), value })
       } catch (err) {
         console.warn('Iterator died with an error', err)
         break

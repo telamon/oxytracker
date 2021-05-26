@@ -63,14 +63,18 @@ test('profile', async t => {
 })
 
 test('addressBook', async t => {
-  t.plan(4)
+  t.plan(6)
   const a = new Kernel(DB())
   const b = new Kernel(DB())
   await a.register({ alias: 'A', tagline: 'test' })
   await b.register({ alias: 'B', tagline: 'disco' })
   t.notOk(await a.findProfileBlock(b.pk), 'B profile not found in A')
   const f = new Feed()
-  f.merge(await b.findProfileBlock(b.pk))
+  const heads = await b.repo.listHeads()
+  t.ok(heads[0].key.equals(b.pk), 'head exists')
+  const pbblock = await b.findProfileBlock(b.pk)
+  t.ok(pbblock, 'Profile B is found')
+  f.merge(pbblock)
   await a.dispatch(f) // Transfer block to a
   t.ok(await a.findProfileBlock(b.pk), 'B profile found in A')
   const bprof = a.store.state.peers[b.pk.hexSlice()]

@@ -1,6 +1,7 @@
 const Feed = require('picofeed')
 const Repo = require('./pico-repo')
 const Store = require('./pico-store')
+const { Profile, Report } = require('./schema')
 const KEY_SK = 'reg/sk'
 const TYPE_PROFILE = 0
 const TYPE_REPORT = 1
@@ -44,11 +45,11 @@ class Kernel {
     await this.repo.writeReg(KEY_SK, sk)
     this._sk = sk
     const f = new Feed()
-    const str = Buffer.from(JSON.stringify({ ...profile, date: new Date().getTime() }))
-    const data = Buffer.alloc(1 + str.length)
-    str.copy(data, 1)
-    str[0] = TYPE_PROFILE
-    f.append(data, sk)
+    const data = { ...profile, date: new Date().getTime() }
+    const buffer = Buffer.alloc(1 + Profile.encodingLength(data))
+    buffer[0] = TYPE_PROFILE
+    Profile.encode(data, buffer, 1)
+    f.append(buffer, sk)
     const mut = await this.store.dispatch(f)
     if (!mut.length) throw new Error('Failed persisting profile')
     return mut
@@ -62,14 +63,14 @@ class Kernel {
   async appendReport (mood = 0, rumors = []) {
     this._checkReady()
     const f = await this.feed()
-    const data = Buffer.from(JSON.stringify({
+    const data = {
       date: new Date().getTime(),
       mood,
       rumors: rumors.map(r => ({ ...r, pk: r.pk.toString('hex') }))
-    }))
-    const buffer = Buffer.alloc(1 + data.length)
-    data.copy(buffer, 1)
+    }
+    const buffer = Buffer.alloc(1 + Report.encodingLength(data))
     buffer[0] = TYPE_REPORT
+    Report.encode(data, buffer, 1)
     f.append(buffer, this._sk)
     return await this.store.dispatch(f)
   }
@@ -92,7 +93,7 @@ class Kernel {
         abort(true)
       }
     })
-    f.truncate(1)
+    f?.truncate(1)
     return f
   }
 
@@ -154,14 +155,14 @@ function profileStore () {
       switch (block.body[0]) {
         case TYPE_PROFILE: {
           state[key] = state[key] || mkProfile(key)
-          Object.assign(state[key], JSON.parse(block.body.slice(1)))
+          Object.assign(state[key], Profile.decode(block.body, 1))
           state[key].pk = block.key
           return state
         }
 
         case TYPE_REPORT: {
           state[key] = state[key] || mkProfile(key)
-          const r = JSON.parse(block.body.slice(1))
+          const r = Report.decode(block.body, 1)
           state[key].lastReport = r.date
           state[key].mood += r.mood
           for (const rumor of r.rumors) {

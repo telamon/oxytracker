@@ -124,6 +124,6 @@ export const addressBook = derived(peers, ($peers, set) => {
 export const lastError = writable(null)
 export function error (msg, err) {
   if (!err && typeof msg !== 'string') return error('╮(︶︿︶)╭', msg)
-  console.error(msg, err)
   lastError.set({ err, msg })
+  console.error(msg, err)
 }

@@ -9,12 +9,14 @@
     "surge": "yarn build && surge public/ tomodachi150.surge.sh",
     "test": "tape test/*.js",
     "debug": "node inspect $(npm bin)/tape test/*.js",
-    "lint": "standard"
+    "lint": "standard",
+    "protobuf": "protocol-buffers -o src/schema.js schema.proto"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.0",
     "memdown": "^6.0.0",
+    "protocol-buffers": "^4.2.0",
     "rollup": "^2.3.4",
     "rollup-plugin-browserify-transform": "^1.0.1",
     "rollup-plugin-css-only": "^3.1.0",
@@ -31,12 +33,13 @@
     "tape": "^5.2.2"
   },
   "dependencies": {
-    "awesome-qr": "^2.1.4-rc.0",
     "file-saver": "^2.0.5",
     "level-js": "^6.0.0",
     "levelup": "^5.0.0",
     "moment": "^2.29.1",
     "picofeed": "^3.3.2",
+    "protocol-buffers-encodings": "^1.1.1",
+    "qrcode-generator": "^1.4.4",
     "vidar": "https://github.com/clabe45/vidar.git"
   }
 }

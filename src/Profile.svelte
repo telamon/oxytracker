@@ -12,7 +12,7 @@ const mode = writable(0)
 <profile>
 <h2>Profile</h2>
   <h3>{$profile.alias}</h3>
-  <key>{$profile.pk}</key>
+  <key>{$profile.pk.toString('hex')}</key>
   <p>{$profile.tagline}</p>
   <nav class="flex row space-between">
     <button on:click="{() => $mode = 0}" class:alt="{$mode === 0}">Perspective</button>
