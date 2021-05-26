@@ -1,6 +1,7 @@
 <script>
 import { writable, derived } from 'svelte/store'
 import { tokens, nullToken, reduceAlignment } from './stores'
+import moment from 'moment'
 export let peer
 export let ondone
 const selectedToken = writable(tokens[tokens.length - 1])
@@ -11,6 +12,7 @@ const fireAndReset = clear => {
   ondone(clear ? $selectedToken.value : token.value)
 }
 const alignment = derived(peer, $p => reduceAlignment($p))
+
 </script>
 <appreciator>
   {#if $peer}
@@ -25,9 +27,9 @@ const alignment = derived(peer, $p => reduceAlignment($p))
       <span>Lv{$peer.level}</span>
     </h2>
     <ul class="minimalist">
-      <li>KEY: 0c456a55...1515</li>
+      <li>{$peer.tagline}
       <li>HEARD: 24 May 2021</li>
-      <li>SEEN: 12 May 2021</li>
+      <li>SEEN: {moment(new Date($peer.date)).fromNow()}</li>
       <li>
       </li>
     </ul>
