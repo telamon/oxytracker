@@ -1,3 +1,56 @@
+/**
+ * PicoStore - picofeed powered blockchain state reducer (blockend)
+ * Compatible with what ever frontend framework you wish to use.
+ *
+ * The reduced state is always persisted and consistent across reloads and
+ * application restarts. (Automatically restores in-memory state from DB)
+ *
+ * Works in browser and nodejs using leveldb and IndexedDB. (levelup)
+ * Use `memdown` in unit-tests.
+ *
+ * USAGE:
+ *
+ * // Initialize a new store using
+ * const db = ... // level-dbs-like-interface
+ * const store = new PicoStore(db)
+ *
+ * // Define a block-validator function,
+ * // that checks if a block can be applied given content, author / something.
+ * const canMutate = ({ state, block }) => {
+ *   // Extract value from block
+ *   const n = JSON.parse(block.body)
+ *
+ *   // New value is valid if higher than previous value
+ *   if (n <= state) return true
+ * }
+ *
+ * // Define a state reducer
+ * const reducer = ({ state, block }) => {
+ *   // returns new state of counter
+ *   return JSON.parse(block.body)
+ * }
+ *
+ * // Registers the counter store with 5 being initial state.
+ * store.register('counter', 5, canMutate, reducer)
+ *
+ * console.log(store.state.counter) // => 5
+ *
+ * // Mutate the state by creating a new feed and dispatching it.
+ * const { sk } = Feed.signPair()
+ * const mutations = new Feed()
+ *
+ * // append new value as a transaction
+ * mutations.append(JSON.stringify(7), sk)
+ *
+ * // dispatch the transactions
+ * let changed = await store.dispatch(mutations)
+ *
+ * // dispatch returns a list of registers that were modified by the feed
+ * console.log(changed) // => ['counter']
+ *
+ * // state is mutated.
+ * console.log(store.state.counter) // => 7
+ */
 const PicoRepo = require('./pico-repo')
 const Feed = require('picofeed')
 
