@@ -5,8 +5,8 @@ export let data
 export let size = 2
 export let margin = 0
 export let level = 'L'
-export let colorDark = '#000' // '#253900'
-export let colorLight = '#808000'
+// export let colorDark = '#000' // '#253900'
+// export let colorLight = '#808000'
 let imgElem
 
 onMount(() => {

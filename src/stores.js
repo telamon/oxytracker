@@ -10,14 +10,14 @@ export const tokens = [
     name: 'Healer',
     desc: 'Makes you feel normal for a while',
     icon: '🌿', // '🩹',
-    value: 1,
+    value: 2,
     karma: 1
   },
   {
     name: 'Tank',
     desc: 'Shoulders your pain',
     icon: '🛡️',
-    value: 2,
+    value: 1,
     karma: 1.5
   },
   {
@@ -38,7 +38,7 @@ export const tokens = [
     name: 'Berserker',
     desc: 'Challenges your sanity',
     icon: '🪓',
-    value: 5,
+    value: 6,
     karma: 0.75
   },
   {
@@ -52,7 +52,7 @@ export const tokens = [
     name: 'Saint',
     desc: 'Gives the gift you need',
     icon: '🙏',
-    value: 6,
+    value: 5,
     karma: 2
   },
   {

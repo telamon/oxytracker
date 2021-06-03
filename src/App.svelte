@@ -53,6 +53,7 @@ const reloadKernel = () => {
     .catch(err => error('Failed reloading kernel', err))
 }
 const clearDatabase = () => {
+  if (!confirm('Permanently wipe your data, you sure?')) return
   kernel.store.destroy()
     .catch(err => error('Failed destorying database', err))
 }
@@ -60,7 +61,7 @@ const clearDatabase = () => {
 
 <tomodachi150>
 
-<brand>¤ TOMODACHI 150 ¤<stripes>\\\</stripes></brand>
+<brand>⊙ TOMODACHI 150 ⊙<stripes>\\\</stripes></brand>
   <lcd>
     {#if $lastError}
       <h2>500 エロール/ERROR</h2>
@@ -68,7 +69,7 @@ const clearDatabase = () => {
       <div>{$lastError.err.message}</div>
       <div class="error-stack">{$lastError.err.stack}</div>
       <button on:click="{() => $lastError = null}">dismiss</button>
-    {:else if $loading === 0}-->
+    {:else if $loading === 0}
       <h2>Bootloader</h2>
       <p>
         <small>
@@ -86,7 +87,9 @@ const clearDatabase = () => {
           $ /sbin/restore<br/>
           Initializing blockstore.......done!<br/>
           Deserializing states...fail!<br/>
-          Replaying time...<br/>
+          Replaying time... Giving up, forked to background<br/>
+          $ /usr/bin/hoax<br/>
+          Welcome brave Adventurer!<br/>
         </small>
       </p>
 

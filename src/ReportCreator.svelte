@@ -1,12 +1,16 @@
 <script>
 import { writable } from 'svelte/store'
+import moment from 'moment'
 import {
   kernel,
   addressBook,
+  profile,
   tokens,
-  reduceAlignment
+  reduceAlignment,
 } from './stores'
 import AppreciatePeer from './AppreciatePeer.svelte'
+
+// Report creation states
 const mood = writable(-1)
 const interactions = writable([])
 const search = writable('')
@@ -31,10 +35,16 @@ const commitDay = () => {
     })
     .catch(err => console.error('Failed appendReport()', err))
 }
+
 </script>
 <section>
   {#if !$isStaging && !$pickedPeer}
-    <h2>Peers <pill>{$addressBook.length}</pill></h2>
+    <h2 class="flex row space-between">
+      <div>Peers</div>
+      <div>Day {moment().diff($profile?.awokenAt, 'days')}</div>
+      <!-- week since awaken, days with consequtive reports -->
+      <pill>{$addressBook.length}</pill>
+    </h2>
     {#if $addressBook.length}
       <peers>
         {#each $addressBook as peer}
@@ -62,7 +72,7 @@ const commitDay = () => {
           your TOMODACHI150 is empty.
           <br/>
           <br/>
-          Scan a friends QR-code or ask them to send you a magic link
+          Scan a friends QR-code or ask them to send you their Magic Link
         </p>
       </excuse>
     {/if}

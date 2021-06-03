@@ -76,18 +76,6 @@ class Kernel {
     return await this.store.dispatch(f)
   }
 
-  /*
-  async readProfile (key) {
-    this._checkReady()
-    const profile = { alias: null, pk: null, tagline: null, date: null }
-    const block = await this.findProfileBlock(key)
-    profile.pk = block.key
-    const p = JSON.parse(block.body.slice(1))
-    Object.assign(profile, p)
-    return profile
-  }
-  */
-
   async findProfileBlock (key) {
     const f = await this.repo.loadHead(key, (block, abort) => {
       if (block.body[0] === TYPE_PROFILE) {
@@ -99,7 +87,7 @@ class Kernel {
   }
 
   /**
-   * Mutates store and in-memory reduced state
+   * Mutates store and reduced state
    */
   async dispatch (patch) {
     this._checkReady()
@@ -130,7 +118,8 @@ function profileStore () {
     mood: 0,
     reputation: [],
     perspective: [],
-    level: 0
+    level: 0,
+    awokenAt: 0,
   })
 
   return {
@@ -159,6 +148,7 @@ function profileStore () {
           state[key] = state[key] || mkProfile(key)
           Object.assign(state[key], Profile.decode(block.body, 1))
           state[key].pk = block.key
+          if (block.isGenesis) state[key].awokenAt = state[key].date
           return state
         }
 
@@ -205,31 +195,35 @@ module.exports = Kernel
 /*
 function store (value, setter) {
   const subs = []
-  const dispatch = () => {
-    for (const cb of subs) cb(value)
-  }
-  if (typeof setter !== 'function') {
-    console.error('[ERROR!] Redundant store, set method not provided')
-    throw new Error('RedundantStore')
-  }
+  const dispatch = () => for (const cb of subs) cb(value)
+  const writable = typeof setter !== 'function'
   const _set = v => {
-    if (v === value) return
+    // NOPE
+    if (Array.isArray(v) && Array.isArray(value)) {
+      // depth compare only equally sized arrays
+      if (v.length === value.length) {
+        let d = false
+        for (let i = 0; d && i < v.length; i++) if (v[i] !== value[i]) d = true
+        if (!d) return
+      }
+    } else if (v === value) return
     value = v
     dispatch()
   }
-  setter && setter(_set) // export set method
-
+  !writable && setter(_set) // export set method
   return {
-    _set,
-    _dispatch: () => dispatch(),
+    set: writable ? _set : undefined
     subscribe: cb => {
       subs.push(cb)
       cb(value)
-      return () => {
+      return () => { // export unsub method
         const idx = subs.indexOf(cb)
-        if (idx !== -1) subs.splice(idx, 1)
+        if (~idx) subs.splice(idx, 1)
       }
-    }
+    },
+    // black magic interface
+    _set,
+    _dispatch: () => dispatch(),
   }
 }
 */
