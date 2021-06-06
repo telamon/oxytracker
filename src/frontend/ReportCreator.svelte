@@ -5,9 +5,12 @@ import {
   kernel,
   addressBook,
   profile,
+} from '../stores'
+import {
   tokens,
   reduceAlignment,
-} from '../stores'
+  tokenOf
+} from '../constants'
 import AppreciatePeer from './AppreciatePeer.svelte'
 
 // Report creation states
@@ -53,7 +56,7 @@ const commitDay = () => {
               <alias>{peer.alias}</alias>
               <level class="text-right">Lv{peer.level}</level>
               {#if $rumors.find(r => r.pk === peer.pk )}
-                <token>{tokens[$rumors.find(r => r.pk === peer.pk).token].icon}</token>
+                <token>{tokenOf[$rumors.find(r => r.pk === peer.pk).token].icon}</token>
               {/if}
               <alignment class="text-right">{reduceAlignment(peer).join('/')}</alignment>
             </portrait>
