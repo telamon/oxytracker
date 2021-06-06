@@ -1,7 +1,7 @@
 <script>
 import ReportCreator from './ReportCreator.svelte'
 import Profile from './Profile.svelte'
-import { kernel, error, lastError } from './stores'
+import { kernel, error, lastError } from '../stores'
 import { writable } from 'svelte/store'
 const loading = writable(0)
 const tmpAlias = writable('')

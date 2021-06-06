@@ -3,7 +3,7 @@ const test = require('tape')
 const Feed = require('picofeed')
 const levelup = require('levelup')
 const memdown = require('memdown')
-const Repo = require('../src/pico-repo')
+const Repo = require('../src/blockend/pico-repo')
 const DB = () => levelup(memdown())
 
 test('PicoRepo: low-level block store', async t => {

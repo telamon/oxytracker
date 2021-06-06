@@ -2,8 +2,8 @@ const test = require('tape')
 const Feed = require('picofeed')
 const levelup = require('levelup')
 const memdown = require('memdown')
-const Kernel = require('../src/kernel')
-const PicoStore = require('../src/pico-store')
+const Kernel = require('../src/blockend/kernel')
+const PicoStore = require('../src/blockend/pico-store')
 const DB = () => levelup(memdown())
 
 test('load', async t => {

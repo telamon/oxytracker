@@ -1,6 +1,6 @@
 <script>
 import { readable, writable } from 'svelte/store'
-import { kernel, profile, error } from './stores'
+import { kernel, profile, error } from '../stores'
 import PicoQR from './PicoQR.svelte'
 const vCard = readable(undefined, set => {
   kernel.findProfileBlock(kernel.pk)

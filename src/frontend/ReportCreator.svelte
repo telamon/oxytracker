@@ -7,7 +7,7 @@ import {
   profile,
   tokens,
   reduceAlignment,
-} from './stores'
+} from '../stores'
 import AppreciatePeer from './AppreciatePeer.svelte'
 
 // Report creation states

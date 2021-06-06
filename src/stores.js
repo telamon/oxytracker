@@ -1,5 +1,5 @@
 import { writable, readable, derived } from 'svelte/store'
-import Kernel from './kernel'
+import Kernel from './blockend/kernel'
 import levelup from 'levelup'
 import leveljs from 'level-js'
 // function levelup(e) { return e }

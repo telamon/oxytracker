@@ -1,6 +1,6 @@
 <script>
 import { writable, derived } from 'svelte/store'
-import { tokens, nullToken, reduceAlignment } from './stores'
+import { tokens, nullToken, reduceAlignment } from '../stores'
 import moment from 'moment'
 export let peer
 export let ondone
