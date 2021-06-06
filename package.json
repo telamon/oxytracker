@@ -10,7 +10,7 @@
     "test": "tape test/*.js",
     "debug": "node inspect $(npm bin)/tape test/*.js",
     "lint": "standard",
-    "protobuf": "protocol-buffers -o src/schema.js schema.proto"
+    "protobuf": "protocol-buffers -o src/blockend/schema.js schema.proto"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
