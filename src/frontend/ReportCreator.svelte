@@ -96,7 +96,7 @@ const commitDay = () => {
         {#each $rumors as rumor}
           <rumor>
           {$addressBook.find(p => p.pk === rumor.pk)?.alias}
-          +{tokens[rumor.token].icon} {tokens[rumor.token].name}
+          +{tokenOf[rumor.token].icon} {tokenOf[rumor.token].name}
           </rumor>
         {/each}
       </summary>

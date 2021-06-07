@@ -119,7 +119,7 @@ function profileStore () {
     reputation: [],
     perspective: [],
     level: 0,
-    awokenAt: 0,
+    awokenAt: 0
   })
 
   return {
