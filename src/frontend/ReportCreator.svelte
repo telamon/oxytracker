@@ -1,6 +1,6 @@
 <script>
-import { writable } from 'svelte/store'
-import moment from 'moment'
+import { writable, derived } from 'svelte/store'
+import dayjs from 'dayjs'
 import {
   kernel,
   addressBook,
@@ -35,16 +35,21 @@ const commitDay = () => {
   kernel.appendReport($mood, $rumors)
     .then(() => {
       $isStaging = false
+      $rumors = []
     })
     .catch(err => console.error('Failed appendReport()', err))
 }
 
+const todayDone = derived(profile, ($p, set) => {
+  const f = 'YYYYMMDD'
+  set(dayjs().format(f) === dayjs(profile.lastReport).format(f))
+})
 </script>
 <section>
   {#if !$isStaging && !$pickedPeer}
     <h2 class="flex row space-between">
       <div>Peers</div>
-      <div>Day {moment().diff($profile?.awokenAt, 'days')}</div>
+      <div>Day {dayjs().diff($profile?.awokenAt, 'days')}</div>
       <!-- week since awaken, days with consequtive reports -->
       <pill>{$addressBook.length}</pill>
     </h2>
@@ -58,7 +63,7 @@ const commitDay = () => {
               {#if $rumors.find(r => r.pk === peer.pk )}
                 <token>{tokenOf[$rumors.find(r => r.pk === peer.pk).token].icon}</token>
               {/if}
-              <alignment class="text-right">{reduceAlignment(peer).join('/')}</alignment>
+              <alignment class="text-right">{reduceAlignment(peer.reputation).join('/')}</alignment>
             </portrait>
           </peer>
         {/each}
@@ -66,7 +71,12 @@ const commitDay = () => {
     <div>
       <input type="search" bind:value="{$search}" placeholder="search" class="fillx"/>
     </div>
-    <div><button on:click={() => $isStaging = true} class="fillx">End day</button></div>
+    <div>
+      <button disabled={$todayDone}
+              on:click={() => $isStaging = true} class="fillx">
+              End day
+      </button>
+    </div>
     {:else}
       <excuse class="flex column center xcenter text-center">
         <h3>┐(￣ヮ￣)┌</h3>

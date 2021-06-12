@@ -97,6 +97,16 @@ lcd button {
   font-weight: normal;
 }
 
+lcd button:disabled {
+  color: var(--lcdbg);
+  font-weight: bold;
+  background-image: radial-gradient(circle,  var(--lcdbg) 35%, var(--lcdfg) 0%);
+  background-repeat: repeat;
+  background-position: 0 0, 2px 2px;
+  background-size: 3px 3px;
+  border: 1px dashed var(--lcdfg)
+}
+
 lcd button.alt {
   font-weight: bold;
   color: var(--lcdfg);

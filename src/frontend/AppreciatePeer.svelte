@@ -5,7 +5,7 @@ import {
   nullToken,
   reduceAlignment,
 } from '../constants'
-import moment from 'moment'
+import dayjs from 'dayjs'
 export let peer
 export let ondone
 const selectedToken = writable(tokens[tokens.length - 1])
@@ -15,7 +15,7 @@ const fireAndReset = clear => {
   $selectedToken = tokens[tokens.length - 1]
   ondone(clear ? $selectedToken.value : token.value)
 }
-const alignment = derived(peer, $p => reduceAlignment($p))
+const alignment = derived(peer, $p => reduceAlignment($p?.reputation))
 
 </script>
 <appreciator>
@@ -33,7 +33,7 @@ const alignment = derived(peer, $p => reduceAlignment($p))
     <ul class="minimalist">
       <li>{$peer.tagline}
       <li>HEARD: 24 May 2021</li>
-      <li>SEEN: {moment(new Date($peer.date)).fromNow()}</li>
+      <li>SEEN: {dayjs().to($peer.date)}</li>
       <li>
       </li>
     </ul>
