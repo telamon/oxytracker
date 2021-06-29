@@ -168,8 +168,11 @@ class PicoRepo { //  PicoJar (a jar for crypto-pickles)
   }
 
   async loadHead (key, stopCallback = undefined) {
+    let limit = 0
+    if (Number.isInteger(stopCallback) && stopCallback > 0) limit = stopCallback
     const head = await this._getHeadPtr(key)
-    if (head) return this.loadFeed(head, stopCallback)
+    if (!head) return
+    return this.loadFeed(head, limit ? (_, after) => !--limit && after(true) : stopCallback)
   }
 
   async loadFeed (ptr, stopCallback = undefined) {

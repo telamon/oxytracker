@@ -4,6 +4,7 @@ const levelup = require('levelup')
 const memdown = require('memdown')
 const Kernel = require('../src/blockend/kernel')
 const PicoStore = require('../src/blockend/pico-store')
+const { T_BER, A_CHS, A_HRM, A_ORD } = require('../src/constants')
 const DB = () => levelup(memdown())
 
 test('load', async t => {
@@ -132,3 +133,64 @@ test('pico-stack/store/carnival', async t => {
 
   t.end()
 })
+
+test('Wallet balances: mining', async t => {
+  try {
+    const a = await spawnActor('Alice')
+    const b = await spawnActor('Bob')
+
+    t.equal(a.kernel.balance[A_ORD], 0, 'Zero understanding')
+    t.equal(a.kernel.balance[A_HRM], 0, 'Zero peace')
+    t.equal(a.kernel.balance[A_CHS], 0, 'Zero love')
+
+    await b.report([[a, T_BER]])
+    await a.exchange(b)
+
+    t.equal(a.kernel.balance[A_ORD], 0)
+    t.equal(a.kernel.balance[A_HRM], 1)
+    t.equal(a.kernel.balance[A_CHS], 1)
+  } catch (err) { t.error(err) }
+  t.end()
+})
+
+test('Wallet balance: transaction', async t => {
+  try {
+    const a = await spawnActor('Alice')
+    const b = await spawnActor('Bob')
+    const d = await spawnActor('Daphne')
+
+    await b.report([[a, T_BER]])
+    await a.exchange(b)
+    const sum = 0.003
+    await a.kernel.appendTransaction(d.kernel.pk, A_CHS, sum)
+    t.equal(a.kernel.balance[A_CHS], 1 - sum, 'Amount deducted')
+    await a.exchange(d)
+    t.equal(d.kernel.balance[A_CHS], sum, 'Amount increased')
+  } catch (err) { t.error(err) }
+  t.end()
+})
+
+const spawnActor = async (alias) => {
+  const kernel = new Kernel(DB())
+  await kernel.load()
+  await kernel.register({ alias })
+
+  return {
+    kernel,
+
+    report (peers) {
+      const rumors = peers.map(([{ kernel }, token]) => ({
+        pk: kernel.pk,
+        token
+      }))
+      return kernel.appendReport(1, rumors)
+    },
+
+    async exchange (peer) {
+      const f = await kernel.feed()
+      await peer.kernel.dispatch(f)
+      const f2 = await peer.kernel.feed()
+      await kernel.dispatch(f2)
+    }
+  }
+}

@@ -42,7 +42,7 @@ const commitDay = () => {
 
 const todayDone = derived(profile, ($p, set) => {
   const f = 'YYYYMMDD'
-  set(dayjs().format(f) === dayjs(profile.lastReport).format(f))
+  set(dayjs().format(f) === dayjs($p.lastReport).format(f))
 })
 </script>
 <section>

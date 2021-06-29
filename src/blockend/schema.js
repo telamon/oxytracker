@@ -24,6 +24,13 @@ var Report = exports.Report = {
   decode: null
 }
 
+var Transaction = exports.Transaction = {
+  buffer: true,
+  encodingLength: null,
+  encode: null,
+  decode: null
+}
+
 var Rumor = exports.Rumor = {
   buffer: true,
   encodingLength: null,
@@ -33,6 +40,7 @@ var Rumor = exports.Rumor = {
 
 defineProfile()
 defineReport()
+defineTransaction()
 defineRumor()
 
 function defineProfile () {
@@ -232,6 +240,117 @@ function defineReport () {
         offset += varint.decode.bytes
         obj.rumors.push(Rumor.decode(buf, offset, offset + len))
         offset += Rumor.decode.bytes
+        break
+        default:
+        offset = skip(prefix & 7, buf, offset)
+      }
+    }
+  }
+}
+
+function defineTransaction () {
+  Transaction.encodingLength = encodingLength
+  Transaction.encode = encode
+  Transaction.decode = decode
+
+  function encodingLength (obj) {
+    var length = 0
+    if (defined(obj.seq)) {
+      var len = encodings.varint.encodingLength(obj.seq)
+      length += 1 + len
+    }
+    if (defined(obj.date)) {
+      var len = encodings.varint.encodingLength(obj.date)
+      length += 1 + len
+    }
+    if (defined(obj.pk)) {
+      var len = encodings.bytes.encodingLength(obj.pk)
+      length += 1 + len
+    }
+    if (defined(obj.asset)) {
+      var len = encodings.sint64.encodingLength(obj.asset)
+      length += 1 + len
+    }
+    if (defined(obj.value)) {
+      var len = encodings.double.encodingLength(obj.value)
+      length += 1 + len
+    }
+    return length
+  }
+
+  function encode (obj, buf, offset) {
+    if (!offset) offset = 0
+    if (!buf) buf = Buffer.allocUnsafe(encodingLength(obj))
+    var oldOffset = offset
+    if (defined(obj.seq)) {
+      buf[offset++] = 8
+      encodings.varint.encode(obj.seq, buf, offset)
+      offset += encodings.varint.encode.bytes
+    }
+    if (defined(obj.date)) {
+      buf[offset++] = 16
+      encodings.varint.encode(obj.date, buf, offset)
+      offset += encodings.varint.encode.bytes
+    }
+    if (defined(obj.pk)) {
+      buf[offset++] = 26
+      encodings.bytes.encode(obj.pk, buf, offset)
+      offset += encodings.bytes.encode.bytes
+    }
+    if (defined(obj.asset)) {
+      buf[offset++] = 32
+      encodings.sint64.encode(obj.asset, buf, offset)
+      offset += encodings.sint64.encode.bytes
+    }
+    if (defined(obj.value)) {
+      buf[offset++] = 41
+      encodings.double.encode(obj.value, buf, offset)
+      offset += encodings.double.encode.bytes
+    }
+    encode.bytes = offset - oldOffset
+    return buf
+  }
+
+  function decode (buf, offset, end) {
+    if (!offset) offset = 0
+    if (!end) end = buf.length
+    if (!(end <= buf.length && offset <= buf.length)) throw new Error("Decoded message is not valid")
+    var oldOffset = offset
+    var obj = {
+      seq: 0,
+      date: 0,
+      pk: null,
+      asset: 0,
+      value: 0
+    }
+    while (true) {
+      if (end <= offset) {
+        decode.bytes = offset - oldOffset
+        return obj
+      }
+      var prefix = varint.decode(buf, offset)
+      offset += varint.decode.bytes
+      var tag = prefix >> 3
+      switch (tag) {
+        case 1:
+        obj.seq = encodings.varint.decode(buf, offset)
+        offset += encodings.varint.decode.bytes
+        break
+        case 2:
+        obj.date = encodings.varint.decode(buf, offset)
+        offset += encodings.varint.decode.bytes
+        break
+        case 3:
+        obj.pk = encodings.bytes.decode(buf, offset)
+        offset += encodings.bytes.decode.bytes
+        break
+        case 4:
+        obj.asset = encodings.sint64.decode(buf, offset)
+        offset += encodings.sint64.decode.bytes
+        break
+        case 5:
+        obj.value = encodings.double.decode(buf, offset)
+        offset += encodings.double.decode.bytes
         break
         default:
         offset = skip(prefix & 7, buf, offset)

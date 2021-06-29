@@ -1,6 +1,7 @@
 <script>
 import ReportCreator from './ReportCreator.svelte'
 import Profile from './Profile.svelte'
+import Wallet from './Wallet.svelte'
 import { kernel, error, lastError } from '../stores'
 import { writable } from 'svelte/store'
 const loading = writable(0)
@@ -23,7 +24,7 @@ const loadKernel = () => {
 loadKernel()
 // TODO: dirty drop-in due to removal of crappy svelte-navigator dep.
 // I wish more people thought serverless
-const mode = writable(0)
+const mode = writable(1)
 
 const handleResize = () => {
 }
@@ -57,11 +58,16 @@ const clearDatabase = () => {
   kernel.store.destroy()
     .catch(err => error('Failed destorying database', err))
 }
+const injectDummy = () => {
+  
+}
 </script>
 
 <tomodachi150>
 
-<brand>⊙ TOMODACHI 150 ⊙<stripes>\\\</stripes></brand>
+  <brand>⊙ TOMODACHI 150 ⊙
+  <!-- <stripes>\\\</stripes> -->
+  </brand>
   <lcd>
     {#if $lastError}
       <h2>500 エロール/ERROR</h2>
@@ -83,12 +89,13 @@ const clearDatabase = () => {
           Internet disconnected sucessfully<br/>
           $ /sbin/hypup<br/>
           Bootstrapping hyperspace connection...<br/>
-          Failed! Hypermodem not implemented<br/>
+          Failed! Hypermodem not found!<br/>
           $ /sbin/restore<br/>
           Initializing blockstore.......done!<br/>
           Deserializing states...fail!<br/>
           Replaying time... Giving up, forked to background<br/>
           $ /usr/bin/hoax<br/>
+          ~~ Heroes of Oxytonia ~~
           Welcome brave Adventurer!<br/>
         </small>
       </p>
@@ -131,7 +138,7 @@ const clearDatabase = () => {
       {:else if $mode === 1}
         <Profile></Profile>
       {:else if $mode === 2}
-        <h2>Timeline</h2>
+        <Wallet></Wallet>
       {:else}
         <h2>404 エロール/ERROR</h2>
           <p class="text-center">
@@ -171,9 +178,10 @@ const clearDatabase = () => {
     <a on:click="{() => $mode = 2}" href="#/profile">Wallet</a>
     <a on:click="{() => $mode = 3}" href="#/repl">Rx Tx</a>
   </nav>
-  <mysteryButton on:click="{inspectFeed}">o</mysteryButton>
-  <mysteryButton on:click="{reloadKernel}">o</mysteryButton>
-  <mysteryButton on:click="{clearDatabase}">o</mysteryButton>
+  <mysteryButton on:click="{inspectFeed}" title="Inspect Feed">o</mysteryButton>
+  <mysteryButton on:click="{reloadKernel}" title="Reload kernel">o</mysteryButton>
+  <mysteryButton on:click="{clearDatabase}" title="Destroy DB">o</mysteryButton>
+  <mysteryButton on:click="{injectDummy}" title="Inject Dummy reports">o</mysteryButton>
 </tomodachi150>
 <svelte:window
                  on:resize|passive={handleResize}

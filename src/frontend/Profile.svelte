@@ -1,6 +1,7 @@
 <script>
-import { readable, writable } from 'svelte/store'
+import { readable, writable, derived } from 'svelte/store'
 import { kernel, profile, error } from '../stores'
+import AlignmentBars from './AlignmentBars.svelte'
 import PicoQR from './PicoQR.svelte'
 const vCard = readable(undefined, set => {
   kernel.findProfileBlock(kernel.pk)
@@ -11,6 +12,7 @@ const vCard = readable(undefined, set => {
     .catch(err => error('Failed findProfileBlock()', err))
 })
 const mode = writable(2)
+const tokens = derived(profile, ($p, set) => set($p?.perspective || []))
 </script>
 <profile>
 <h2>Profile</h2>
@@ -19,6 +21,7 @@ const mode = writable(2)
     <key>Key {$profile.pk}</key>
   -->
   <p>{$profile.tagline}</p>
+  <AlignmentBars tokens={tokens} />
   <nav class="flex row space-between">
     <button on:click="{() => $mode = 0}" class:alt="{$mode === 0}">Perspective</button>
     <button on:click="{() => $mode = 1}" class:alt="{$mode === 1}">Reputation</button>

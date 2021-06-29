@@ -50,9 +50,11 @@ export const profile = readable({}, set => {
     if (kernel.pk) set(peers[kernel.pk.toString('hex')])
   })
 })
+
 export const peers = readable({}, set => {
   kernel.store.on('peers', set)
 })
+
 export const addressBook = derived(peers, ($peers, set) => {
   const list = []
   const selfPk = kernel.pk.toString('hex')
@@ -63,6 +65,13 @@ export const addressBook = derived(peers, ($peers, set) => {
   set(list)
 })
 
+export const balance = readable([0, 0, 0], set => {
+  kernel.store.on('assets', () => {
+    if (!kernel.balance) return
+    set(kernel.balance)
+  })
+})
+
 // global error handler
 export const lastError = writable(null)
 export function error (msg, err) {
@@ -70,4 +79,3 @@ export function error (msg, err) {
   lastError.set({ err, msg })
   console.error(msg, err)
 }
-

@@ -1,12 +1,18 @@
 const Feed = require('picofeed')
 const Repo = require('./pico-repo')
 const Store = require('./pico-store')
-const { Profile, Report } = require('./schema')
+const { Profile, Report, Transaction } = require('./schema')
 const KEY_SK = 'reg/sk'
-const TYPE_PROFILE = 0
-const TYPE_REPORT = 1
-const TYPE_PACT = 2
-
+const {
+  TYPE_PROFILE,
+  TYPE_REPORT,
+  TYPE_PACT,
+  TYPE_TRANSACTION,
+  A_ORD,
+  A_HRM,
+  A_CHS,
+  unpackToken
+} = require('../constants')
 class Kernel {
   constructor (db) {
     this.db = db
@@ -40,12 +46,17 @@ class Kernel {
     return this.store.state.peers[this.pk.toString('hex')]
   }
 
+  get balance () {
+    return this.store.state.assets[this.pk.toString('hex')]
+  }
+
   async register (profile) {
     const { sk } = Feed.signPair()
     await this.repo.writeReg(KEY_SK, sk)
     this._sk = sk
-    const f = new Feed()
-    const data = { ...profile, date: new Date().getTime() }
+    const f = (await this.repo.loadHead(this.pk, 1)) || new Feed()
+    const seq = f.length ? parseBlock(f.last.body).seq + 1 : 0
+    const data = { ...profile, date: new Date().getTime(), seq }
     const buffer = Buffer.alloc(1 + Profile.encodingLength(data))
     buffer[0] = TYPE_PROFILE
     Profile.encode(data, buffer, 1)
@@ -62,8 +73,10 @@ class Kernel {
 
   async appendReport (mood = 0, rumors = []) {
     this._checkReady()
-    const f = await this.feed()
+    const f = await this.repo.loadHead(this.pk, 1)
+    const seq = parseBlock(f.last.body).seq + 1
     const data = {
+      seq,
       date: new Date().getTime(),
       mood,
       rumors: rumors.map(r => ({ ...r, pk: toBuffer(r.pk) }))
@@ -72,6 +85,25 @@ class Kernel {
     const buffer = Buffer.alloc(1 + Report.encodingLength(data))
     buffer[0] = TYPE_REPORT
     Report.encode(data, buffer, 1)
+    f.append(buffer, this._sk)
+    return await this.store.dispatch(f)
+  }
+
+  async appendTransaction (target, asset, value) {
+    this._checkReady()
+    const f = await this.repo.loadHead(this.pk, 1)
+    const seq = parseBlock(f.last.body).seq + 1
+    const data = {
+      seq,
+      date: new Date().getTime(),
+      pk: toBuffer(target),
+      asset,
+      value
+    }
+    console.info('Appending transaction', data)
+    const buffer = Buffer.alloc(1 + Transaction.encodingLength(data))
+    buffer[0] = TYPE_TRANSACTION
+    Transaction.encode(data, buffer, 1)
     f.append(buffer, this._sk)
     return await this.store.dispatch(f)
   }
@@ -171,12 +203,41 @@ function profileStore () {
 }
 
 function tokenBalances () {
+  const mkBalance = () => [0, 0, 0]
   return {
-    name: 'tokens',
+    name: 'assets',
     initialValue: {},
     filter: ({ block, state }) => {
     },
     reducer: ({ block, state }) => {
+      // Sender
+      const key = block.key.toString('hex')
+      switch (block.body[0]) {
+        case TYPE_PROFILE: { // not required
+          state[key] = state[key] || mkBalance()
+          return state
+        }
+        case TYPE_REPORT: {
+          const report = Report.decode(block.body, 1)
+          for (const r of report.rumors) {
+            const assets = unpackToken(r.token)
+            const rpk = r.pk.toString('hex')
+            state[rpk] = state[rpk] || mkBalance()
+            state[rpk][A_ORD] += assets[A_ORD]
+            state[rpk][A_HRM] += assets[A_HRM]
+            state[rpk][A_CHS] += assets[A_CHS]
+          }
+          return state
+        }
+        case TYPE_TRANSACTION: {
+          const t = Transaction.decode(block.body, 1)
+          const rpk = t.pk.toString('hex')
+          state[rpk] = state[rpk] || mkBalance()
+          state[rpk][t.asset] += t.value
+          state[key][t.asset] -= t.value
+          return state
+        }
+      }
     }
   }
 }
@@ -188,6 +249,18 @@ function toBuffer (o) {
   else return o
 }
 
+function parseBlock (buffer) {
+  switch (buffer[0]) {
+    case TYPE_REPORT:
+      return Report.decode(buffer, 1)
+    case TYPE_PROFILE:
+      return Profile.decode(buffer, 1)
+    case TYPE_TRANSACTION:
+      return Transaction.decode(buffer, 1)
+    default:
+      throw new Error(`Unknown block type: '${buffer[0]}'`)
+  }
+}
 module.exports = Kernel
 
 // nano-store.js
