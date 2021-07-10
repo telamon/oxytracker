@@ -1,12 +1,14 @@
-# oxytracker
+# TOMODACHI150
 
 **Update:**
 Early Access preview: https://tomodachi150.surge.sh (Very alpha, enjoy!)
 
 
-Because my patience with kotlin is shorter than I imagined,
-come back later when proper readme is available or just go
-play [OXytOX](https://github.com/telamon/oxytox) using a camera, calendar and telegram.
+This is an WIP digital version of **the game**, it's gonna take a while...
+
+Meanwhile [go play the analog version](https://github.com/telamon/oxytox) using a camera, calendar-app and some messenger.
+
+> 150 is the limit, all you need is 4
 
 No apps required.
 

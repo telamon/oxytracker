@@ -1,3 +1,4 @@
+const dayjs = require('dayjs')
 const Feed = require('picofeed')
 const Repo = require('./pico-repo')
 const Store = require('./pico-store')
@@ -11,7 +12,8 @@ const {
   A_ORD,
   A_HRM,
   A_CHS,
-  unpackToken
+  unpackToken,
+  reduceAlignment
 } = require('../constants')
 class Kernel {
   constructor (db) {
@@ -71,13 +73,20 @@ class Kernel {
     return this.repo.loadHead(this.pk)
   }
 
-  async appendReport (mood = 0, rumors = []) {
+  /**
+   * Mood: -1..2
+   * Rumors: array of pk's and tokens
+   * Date: careful, setting one in the future will timelock your chain
+   *       setting it to earlier than lastReport will brick your chain.
+   *       safe default is to leave it `undefined`
+   */
+  async appendReport (mood = 0, rumors = [], date) {
     this._checkReady()
     const f = await this.repo.loadHead(this.pk, 1)
     const seq = parseBlock(f.last.body).seq + 1
     const data = {
       seq,
-      date: new Date().getTime(),
+      date: date || new Date().getTime(),
       mood,
       rumors: rumors.map(r => ({ ...r, pk: toBuffer(r.pk) }))
     }
@@ -138,6 +147,38 @@ class Kernel {
     debugger
     return true
   }
+
+  // -- HIGHER LEVEL LOGIC --
+
+  // TODO: move to helpers probably as functional calculateTrend(pHistory, date = new Date())
+  alignmentAt (date = new Date()) {
+    // TODO: calculate perspective overall, previous week, current week.
+    const empty = () => ({
+      mood: 0,
+      forces: [0, 0, 0]
+    })
+    const overall = empty()
+    const month = empty()
+    const week = empty()
+    const lastWeek = empty()
+    const w1 = dayjs(date).subtract(1, 'week').toDate().getTime()
+    const w2 = dayjs(date).subtract(2, 'week').toDate().getTime()
+    const m1 = dayjs(date).subtract(1, 'month').toDate().getTime()
+    for (const day of this.profile.pHistory) {
+      if (day.date > date.getTime()) break
+      if (day.date >= w1) {
+        // reduce to current week
+      }
+      if (day.date < w1 && day.date >= w2) {
+        // reduce to previous week
+      }
+      if (day.date >= m1) {
+        // reduce to current month
+      }
+      // reduce overall.
+      debugger
+    }
+  }
 }
 
 function profileStore () {
@@ -149,7 +190,9 @@ function profileStore () {
     lastReport: null,
     mood: 0,
     reputation: [],
-    perspective: [],
+    // rHistory: []
+    perspective: [], // Overall.. deprecate maybe
+    pHistory: [], // Perspective over time
     level: 0,
     awokenAt: 0
   })
@@ -189,6 +232,11 @@ function profileStore () {
           const r = Report.decode(block.body, 1)
           state[key].lastReport = r.date
           state[key].mood += r.mood
+          state[key].pHistory.push({
+            date: r.date,
+            mood: r.mood,
+            tokens: r.rumors.map(rumor => rumor.token)
+          })
           for (const rumor of r.rumors) {
             state[key].perspective.push(rumor.token)
             const rk = rumor.pk.toString('hex')

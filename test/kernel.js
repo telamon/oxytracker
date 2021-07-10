@@ -4,7 +4,19 @@ const levelup = require('levelup')
 const memdown = require('memdown')
 const Kernel = require('../src/blockend/kernel')
 const PicoStore = require('../src/blockend/pico-store')
-const { T_BER, A_CHS, A_HRM, A_ORD } = require('../src/constants')
+const {
+  T_BER,
+  T_HLR,
+  T_PAL,
+  T_WAR,
+  T_SNT,
+  T_TNK,
+  A_CHS,
+  A_HRM,
+  A_ORD,
+  reduceAlignment
+} = require('../src/constants')
+const dayjs = require('dayjs')
 const DB = () => levelup(memdown())
 
 test('load', async t => {
@@ -170,6 +182,44 @@ test('Wallet balance: transaction', async t => {
   t.end()
 })
 
+test('Perspective: overall, montly, weekly', async t => {
+  try {
+    const me = await spawnActor('Tony')
+    const peer0 = await spawnActor('Bro0')
+    const peer1 = await spawnActor('Bro1')
+    const peer2 = await spawnActor('Berserker0')
+    await me.report([
+      [peer0, T_TNK],
+      [peer1, T_HLR]
+    ])
+    await me.report([
+      [peer0, T_WAR],
+      [peer1, T_PAL]
+    ], 8)
+    await me.report([
+      [peer0, T_HLR],
+      [peer1, T_HLR],
+      [peer2, T_SNT]
+    ], 16)
+    await me.report([
+      [peer0, T_WAR],
+      [peer1, T_HLR],
+      [peer2, T_BER]
+    ], 19)
+    await me.report([
+      [peer0, T_WAR],
+      [peer1, T_TNK],
+      [peer2, T_BER]
+    ], 20)
+    const per = reduceAlignment(me.kernel.profile.perspective)
+    // Have fun https://en.wikipedia.org/wiki/Alignment_(Dungeons_%26_Dragons)
+    const alignment = me.kernel.alignmentAt(dayjs().add(22, 'days').toDate())
+    t.equal(alignment.current, 'chaotic neutral')
+    t.equal(alignment.lastWeek, 'lawful good')
+    debugger
+  } catch (e) { t.error(e) }
+})
+
 const spawnActor = async (alias) => {
   const kernel = new Kernel(DB())
   await kernel.load()
@@ -178,12 +228,13 @@ const spawnActor = async (alias) => {
   return {
     kernel,
 
-    report (peers) {
+    report (peers, n) {
       const rumors = peers.map(([{ kernel }, token]) => ({
         pk: kernel.pk,
         token
       }))
-      return kernel.appendReport(1, rumors)
+      const day = dayjs().add(n || 0, 'days').toDate()
+      return kernel.appendReport(1, rumors, day)
     },
 
     async exchange (peer) {

@@ -21,13 +21,13 @@ const tokens = derived(profile, ($p, set) => set($p?.perspective || []))
     <key>Key {$profile.pk}</key>
   -->
   <p>{$profile.tagline}</p>
-  <AlignmentBars tokens={tokens} />
   <nav class="flex row space-between">
     <button on:click="{() => $mode = 0}" class:alt="{$mode === 0}">Perspective</button>
     <button on:click="{() => $mode = 1}" class:alt="{$mode === 1}">Reputation</button>
     <button on:click="{() => $mode = 2}" class:alt="{$mode === 2}">vCard</button>
   </nav>
   {#if $mode === 0}
+    <AlignmentBars tokens={tokens} />
     {JSON.stringify($profile, null, 2)}
   {:else if $mode === 2}
     <p class="flex row center"><a href="{$vCard}">Magic Link</a></p>
